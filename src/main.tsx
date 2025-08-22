@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { setupGlobalErrorHandling } from './utils/errorHandling';
+import { setupGlobalErrorHandling } from './utils/monitoring';
 
 // Setup global error handling for production
 setupGlobalErrorHandling();

@@ -211,22 +211,25 @@ class MonitoringService {
 // Create singleton instance
 export const monitoring = new MonitoringService();
 
-// Global error handler
-window.addEventListener('error', (event) => {
-  monitoring.captureError(event.error || event.message, 'Global Error Handler', {
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
+// Global error handling setup function
+export const setupGlobalErrorHandling = () => {
+  // Global error handler
+  window.addEventListener('error', (event) => {
+    monitoring.captureError(event.error || event.message, 'Global Error Handler', {
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
   });
-});
 
-// Global unhandled promise rejection handler
-window.addEventListener('unhandledrejection', (event) => {
-  monitoring.captureError(
-    event.reason instanceof Error ? event.reason : String(event.reason),
-    'Unhandled Promise Rejection'
-  );
-});
+  // Global unhandled promise rejection handler
+  window.addEventListener('unhandledrejection', (event) => {
+    monitoring.captureError(
+      event.reason instanceof Error ? event.reason : String(event.reason),
+      'Unhandled Promise Rejection'
+    );
+  });
+};
 
 // Performance observer for Core Web Vitals
 if ('PerformanceObserver' in window) {
