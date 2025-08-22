@@ -90,6 +90,8 @@ export const useAssetInventory = () => {
     }, APP_CONFIG.SEARCH.DEBOUNCE_DELAY);
 
     return () => clearTimeout(timeoutId);
+  }
+  )
 
   // Calculate statistics with error handling
   const stats = useMemo(() => {
