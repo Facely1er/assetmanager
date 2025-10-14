@@ -189,7 +189,7 @@ export const monitorConnection = () => {
 };
 
 // Enhanced error handling with categorization
-export const handleSupabaseError = (error: any): string => {
+export const handleSupabaseError = (error: unknown): string => {
   if (import.meta.env.DEV) {
     console.error('Supabase error details:', error);
   }
@@ -257,7 +257,7 @@ export const isSupabaseEnabled = isSupabaseConfigured;
 export const checkSupabaseConnectivity = testSupabaseConnectivity;
 
 // Real-time subscription helper
-export const subscribeToAssetChanges = (callback: (payload: any) => void) => {
+export const subscribeToAssetChanges = (callback: (payload: Record<string, unknown>) => void) => {
   return supabase
     ?.channel('assets_changes')
     .on('postgres_changes', 
@@ -269,12 +269,14 @@ export const subscribeToAssetChanges = (callback: (payload: any) => void) => {
 
 // Check if user is authenticated
 export const getCurrentUser = async () => {
-  const { data: { user } } = await supabase?.auth.getUser();
+  if (!supabase) return null;
+  const { data: { user } } = await supabase.auth.getUser();
   return user;
 };
 
 // Get current session
 export const getCurrentSession = async () => {
-  const { data: { session } } = await supabase?.auth.getSession();
+  if (!supabase) return null;
+  const { data: { session } } = await supabase.auth.getSession();
   return session;
 };

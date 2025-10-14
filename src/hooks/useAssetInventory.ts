@@ -240,7 +240,7 @@ export const useAssetInventory = () => {
         if (currentAsset) {
           const newTags = (updates.addTags as string).split(',').map(tag => tag.trim()).filter(tag => tag);
           updates.tags = [...new Set([...currentAsset.tags, ...newTags])];
-          delete (updates as any).addTags;
+          delete (updates as Record<string, unknown>).addTags;
         }
       }
       

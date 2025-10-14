@@ -18,7 +18,7 @@ interface CacheEntry<T> {
 }
 
 class AssetCache {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private maxSize = 100;
 
   set<T>(key: string, data: T, ttl = APP_CONFIG.CACHE.DEFAULT_TTL): void {
@@ -90,27 +90,27 @@ const mapRowToAsset = async (row: AssetRow, useCache = true): Promise<Asset> => 
 
   const relationships: AssetRelationship[] = relationshipsData?.map(rel => ({
     id: rel.id,
-    relatedAssetId: (rel.related_asset as any)?.id || '',
-    relatedAssetName: (rel.related_asset as any)?.name || '',
-    relationshipType: rel.relationship_type as any,
-    strength: rel.strength as any,
+    relatedAssetId: (rel.related_asset as { id: string })?.id || '',
+    relatedAssetName: (rel.related_asset as { name: string })?.name || '',
+    relationshipType: rel.relationship_type as AssetRelationship['relationshipType'],
+    strength: rel.strength as AssetRelationship['strength'],
   })) || [];
 
   const vulnerabilities: Vulnerability[] = vulnerabilitiesData?.map(vuln => ({
     id: vuln.id,
     cveId: vuln.cve_id,
-    severity: vuln.severity as any,
+    severity: vuln.severity as Vulnerability['severity'],
     title: vuln.title,
     description: vuln.description,
     discoveredAt: new Date(vuln.discovered_at),
-    status: vuln.status as any,
+    status: vuln.status as Vulnerability['status'],
   })) || [];
 
     const asset: Asset = {
     id: row.id,
     name: row.name,
-    type: row.type as any,
-    criticality: row.criticality as any,
+    type: row.type as Asset['type'],
+    criticality: row.criticality as Asset['criticality'],
     owner: row.owner,
     location: row.location,
     ipAddress: row.ip_address,
@@ -118,7 +118,7 @@ const mapRowToAsset = async (row: AssetRow, useCache = true): Promise<Asset> => 
     complianceFrameworks: row.compliance_frameworks,
     riskScore: row.risk_score,
     tags: row.tags,
-    status: row.status as any,
+    status: row.status as Asset['status'],
     lastAssessed: new Date(row.last_assessed),
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),

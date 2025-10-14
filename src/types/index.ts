@@ -4,7 +4,7 @@ export * from './organization';
 export * from './database';
 
 // Global type definitions
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -20,7 +20,7 @@ export interface PaginationParams {
 
 export interface FilterParams {
   search?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
 
 // Environment variables type

@@ -5,7 +5,6 @@ import { AssetFilters } from '../types/asset';
 interface AdvancedFiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  filters: AssetFilters;
   onApplyFilters: (filters: Partial<AssetFilters>) => void;
 }
 
@@ -25,7 +24,6 @@ interface AdvancedFilterState {
 export const AdvancedFiltersModal: React.FC<AdvancedFiltersModalProps> = ({
   isOpen,
   onClose,
-  filters,
   onApplyFilters,
 }) => {
   const [localFilters, setLocalFilters] = useState<AdvancedFilterState>({
@@ -198,7 +196,7 @@ export const AdvancedFiltersModal: React.FC<AdvancedFiltersModalProps> = ({
                   </label>
                   <select 
                     value={localFilters.hasVulnerabilities}
-                    onChange={(e) => setLocalFilters({ ...localFilters, hasVulnerabilities: e.target.value as any })}
+                    onChange={(e) => setLocalFilters({ ...localFilters, hasVulnerabilities: e.target.value as 'yes' | 'no' | '' })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="">Any</option>

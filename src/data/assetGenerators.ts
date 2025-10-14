@@ -257,8 +257,8 @@ export function generateAssetInventory(scenarioId: string): Asset[] {
         name: generateAssetName(assetType, template, i),
         type: assetType === 'cloudServices' ? 'Cloud Service' : 
               assetType === 'endpoints' ? 'Endpoint' :
-              assetType.charAt(0).toUpperCase() + assetType.slice(1, -1) as any,
-        criticality: criticality as any,
+              assetType.charAt(0).toUpperCase() + assetType.slice(1, -1) as Asset['type'],
+        criticality: criticality as Asset['criticality'],
         owner: getRandomElement(owners),
         location: getRandomElement(locations),
         ipAddress: assetType !== 'cloudServices' ? generateIPAddress() : undefined,
@@ -269,7 +269,7 @@ export function generateAssetInventory(scenarioId: string): Asset[] {
         tags: getRandomElements(tags, Math.floor(Math.random() * 4) + 1),
         relationships: [], // Will be populated after all assets are created
         vulnerabilities: generateVulnerabilities(assetType, criticality),
-        status: status as any,
+        status: status as Asset['status'],
         createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
       };
@@ -292,8 +292,8 @@ export function generateAssetInventory(scenarioId: string): Asset[] {
         id: `rel-${generateRandomId()}`,
         relatedAssetId: relatedAsset.id,
         relatedAssetName: relatedAsset.name,
-        relationshipType: getRandomElement(relationshipTypes) as any,
-        strength: getRandomElement(['Strong', 'Medium', 'Weak']) as any
+        relationshipType: getRandomElement(relationshipTypes) as AssetRelationship['relationshipType'],
+        strength: getRandomElement(['Strong', 'Medium', 'Weak']) as AssetRelationship['strength']
       };
       
       asset.relationships.push(relationship);

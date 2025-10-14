@@ -25,7 +25,7 @@ interface WorkflowStep {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   estimatedTime: string;
   difficulty: 'Easy' | 'Medium' | 'Advanced';
   category: 'Setup' | 'Configuration' | 'Operations' | 'Advanced';
@@ -40,7 +40,7 @@ interface WorkflowAction {
   title: string;
   description: string;
   actionType: 'navigate' | 'modal' | 'external' | 'info';
-  actionData?: any;
+  actionData?: Record<string, unknown>;
   completed?: boolean;
 }
 

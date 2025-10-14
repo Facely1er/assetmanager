@@ -125,7 +125,7 @@ export const AdvancedReportingDashboard: React.FC = () => {
               <Calendar className="h-5 w-5 text-gray-400" />
               <select
                 value={selectedTimeRange}
-                onChange={(e) => setSelectedTimeRange(e.target.value as any)}
+                onChange={(e) => setSelectedTimeRange(e.target.value as '7d' | '30d' | '90d' | '1y')}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="7d">Last 7 days</option>
@@ -139,7 +139,7 @@ export const AdvancedReportingDashboard: React.FC = () => {
               <Filter className="h-5 w-5 text-gray-400" />
               <select
                 value={selectedReport}
-                onChange={(e) => setSelectedReport(e.target.value as any)}
+                onChange={(e) => setSelectedReport(e.target.value as 'asset_summary' | 'compliance' | 'risk_assessment' | 'vulnerability')}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="overview">Overview</option>

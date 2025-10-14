@@ -22,7 +22,7 @@ interface NavigationSidebarProps {
   onViewChange: (view: string) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  user?: any;
+  user?: { id: string; email: string; full_name?: string };
   onShowTeamManagement?: () => void;
   signOut?: () => void;
 }

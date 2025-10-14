@@ -1,9 +1,9 @@
 import React from 'react';
-import { ChevronUp, ChevronDown, Eye, Edit, Trash2, Network, AlertTriangle, MoreHorizontal } from 'lucide-react';
+import { ChevronUp, ChevronDown, Eye, Edit, Trash2, Network, AlertTriangle } from 'lucide-react';
 import { Asset, SortConfig } from '../types/asset';
 import { getCriticalityColor, getStatusColor, getRiskScoreColor } from '../utils/assetUtils';
 import { format } from 'date-fns';
-import { LoadingSpinner, TableLoadingSkeleton } from './LoadingSpinner';
+import { TableLoadingSkeleton } from './LoadingSpinner';
 
 interface AssetDataTableProps {
   assets: Asset[];
@@ -34,7 +34,7 @@ export const AssetDataTable: React.FC<AssetDataTableProps> = ({
   onManageRelationships,
   onManageVulnerabilities,
 }) => {
-  const [expandedRow, setExpandedRow] = React.useState<string | null>(null);
+  const [expandedRow] = React.useState<string | null>(null);
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; assetId: string } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent, assetId: string) => {

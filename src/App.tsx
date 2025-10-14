@@ -5,8 +5,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthGuard } from './components/auth/AuthGuard';
 import { StartScreen } from './components/StartScreen';
 import { MainLayout } from './components/MainLayout';
-import { monitorConnection } from './lib/supabase';
-import { performanceMonitor } from './utils/performance';
 
 // Enhanced App component with production optimizations
 const App: React.FC = () => {

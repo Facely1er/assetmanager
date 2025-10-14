@@ -11,7 +11,7 @@ interface ErrorInfo {
   url: string;
   userId?: string;
   organizationId?: string;
-  additionalData?: Record<string, any>;
+  additionalData?: Record<string, unknown>;
 }
 
 interface PerformanceMetric {
@@ -32,7 +32,7 @@ class MonitoringService {
   }
 
   // Error tracking
-  captureError(error: Error | string, context?: string, additionalData?: Record<string, any>) {
+  captureError(error: Error | string, context?: string, additionalData?: Record<string, unknown>) {
     if (!this.isEnabled) return;
 
     const errorInfo: ErrorInfo = {
@@ -301,7 +301,7 @@ const ErrorBoundaryWrapper: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 // Export utility functions
-export const withErrorBoundary = <T extends Record<string, any>>(
+export const withErrorBoundary = <T extends Record<string, unknown>>(
   Component: React.ComponentType<T>
 ): React.ComponentType<T> => {
   const WrappedComponent: React.ComponentType<T> = (props) => {

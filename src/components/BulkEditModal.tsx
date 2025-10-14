@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, Users, MapPin, Tag, Shield, AlertCircle } from 'lucide-react';
 import { Asset } from '../types/asset';
-import { assetTypes, criticalityLevels, statusOptions, complianceFrameworks } from '../data/sampleAssets';
+import { criticalityLevels, statusOptions } from '../data/sampleAssets';
 
 interface BulkEditModalProps {
   isOpen: boolean;

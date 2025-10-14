@@ -1,7 +1,7 @@
 import React from 'react';
 import { Filter, X } from 'lucide-react';
 import { AssetFilters } from '../types/asset';
-import { assetTypes, criticalityLevels, statusOptions, complianceFrameworks } from '../data/sampleAssets';
+import { assetTypes, criticalityLevels, statusOptions } from '../data/sampleAssets';
 
 interface AssetFiltersPanelProps {
   filters: AssetFilters;

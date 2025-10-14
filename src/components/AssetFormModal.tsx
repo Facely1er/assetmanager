@@ -79,7 +79,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
     setErrors([]);
   }, [asset, isOpen]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | string[] | Date) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear errors for this field
     setErrors(prev => prev.filter(error => error.field !== field));

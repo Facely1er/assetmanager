@@ -77,7 +77,7 @@ export const handleApiError = (error: unknown): string => {
 };
 
 // Production-ready error logging with structured data
-export const logError = (error: unknown, context?: string, additionalData?: Record<string, any>) => {
+export const logError = (error: unknown, context?: string, additionalData?: Record<string, unknown>) => {
   const errorInfo = {
     message: error instanceof Error ? error.message : 'Unknown error',
     stack: error instanceof Error ? error.stack : undefined,
@@ -108,6 +108,6 @@ export const logError = (error: unknown, context?: string, additionalData?: Reco
   }
 };
 
-const sendToMonitoringService = (errorInfo: any) => {
+const sendToMonitoringService = (errorInfo: Record<string, unknown>) => {
   // Implementation for sending to monitoring service
 };
