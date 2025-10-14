@@ -5,7 +5,7 @@ interface OfflineOperation {
   id: string;
   type: 'create' | 'update' | 'delete';
   resource: 'asset' | 'organization' | 'user';
-  data: any;
+  data: unknown;
   timestamp: string;
   retry_count: number;
 }
@@ -40,7 +40,7 @@ class OfflineManager {
   }
 
   // Queue operation for offline sync
-  queueOperation(type: OfflineOperation['type'], resource: OfflineOperation['resource'], data: any): string {
+  queueOperation(type: OfflineOperation['type'], resource: OfflineOperation['resource'], data: unknown): string {
     const operation: OfflineOperation = {
       id: crypto.randomUUID(),
       type,
@@ -177,7 +177,7 @@ class OfflineManager {
 class OfflineCache {
   private cacheName = 'ermits-data-cache-v1';
 
-  async cacheData(key: string, data: any, expiry?: number): Promise<void> {
+  async cacheData(key: string, data: unknown, expiry?: number): Promise<void> {
     try {
       const cache = await caches.open(this.cacheName);
       const response = new Response(JSON.stringify({
@@ -192,7 +192,7 @@ class OfflineCache {
     }
   }
 
-  async getCachedData(key: string): Promise<any | null> {
+  async getCachedData(key: string): Promise<unknown | null> {
     try {
       const cache = await caches.open(this.cacheName);
       const response = await cache.match(key);

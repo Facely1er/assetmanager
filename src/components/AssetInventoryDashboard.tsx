@@ -239,7 +239,7 @@ export const AssetInventoryDashboard: React.FC = () => {
     }
   };
 
-  const handleSaveRelationships = async (relationships: any[]) => {
+  const handleSaveRelationships = async (relationships: Asset['relationships']) => {
     if (!relationshipAsset) return;
     
     try {
@@ -254,7 +254,7 @@ export const AssetInventoryDashboard: React.FC = () => {
     }
   };
 
-  const handleSaveVulnerabilities = async (vulnerabilities: any[]) => {
+  const handleSaveVulnerabilities = async (vulnerabilities: Asset['vulnerabilities']) => {
     if (!vulnerabilityAsset) return;
     
     try {

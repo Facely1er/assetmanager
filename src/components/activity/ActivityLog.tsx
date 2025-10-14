@@ -5,7 +5,6 @@ import {
   Filter, 
   Download, 
   User, 
-  Shield, 
   Edit, 
   Trash2,
   Plus,
@@ -33,13 +32,13 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ organizationId }) => {
 
   useEffect(() => {
     loadActivities();
-  }, [organizationId, dateRange]);
+  }, [organizationId, dateRange, loadActivities]);
 
   useEffect(() => {
     filterActivities();
-  }, [activities, searchQuery, actionFilter, userFilter]);
+  }, [activities, searchQuery, actionFilter, userFilter, filterActivities]);
 
-  const loadActivities = async () => {
+  const loadActivities = React.useCallback(async () => {
     setLoading(true);
     try {
       // Demo mode - generate sample activity data
@@ -123,14 +122,14 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ organizationId }) => {
       );
 
       setActivities(filteredByDate);
-    } catch (error) {
+    } catch {
       toast.error('Failed to load activity log');
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, dateRange]);
 
-  const filterActivities = () => {
+  const filterActivities = React.useCallback(() => {
     let filtered = activities;
 
     if (searchQuery) {
@@ -152,7 +151,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ organizationId }) => {
     }
 
     setFilteredActivities(filtered);
-  };
+  }, [activities, searchQuery, actionFilter, userFilter]);
 
   const getActionIcon = (action: string) => {
     if (action.includes('created')) return <Plus className="h-4 w-4 text-green-600" />;
@@ -227,7 +226,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ organizationId }) => {
       
       URL.revokeObjectURL(url);
       toast.success('Activity log exported successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to export activity log');
     }
   };
@@ -332,7 +331,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ organizationId }) => {
 
             <select
               value={dateRange}
-              onChange={(e) => setDateRange(e.target.value as any)}
+              onChange={(e) => setDateRange(e.target.value as 'today' | '7d' | '30d' | '90d')}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="today">Today</option>

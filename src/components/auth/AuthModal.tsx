@@ -29,7 +29,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       }
       onClose();
       resetForm();
-    } catch (error) {
+    } catch {
       // Error handling is done in the auth context
     } finally {
       setIsLoading(false);

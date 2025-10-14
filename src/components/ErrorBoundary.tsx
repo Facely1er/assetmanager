@@ -66,7 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
     try {
       localStorage.removeItem('ermits-app-state');
       sessionStorage.clear();
-    } catch (e) {
+    } catch {
       // Ignore storage errors
     }
     window.location.href = '/';

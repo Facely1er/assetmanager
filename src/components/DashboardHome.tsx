@@ -14,7 +14,7 @@ import {
   Zap
 } from 'lucide-react';
 import { AssetStats } from '../types/asset';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 
 interface DashboardHomeProps {
   stats: AssetStats;

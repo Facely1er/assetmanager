@@ -231,7 +231,7 @@ export const reportingService = {
     };
   },
 
-  async generatePDFReport(assets: Asset[], stats: any): Promise<void> {
+  async generatePDFReport(assets: Asset[], stats: Record<string, unknown>): Promise<void> {
     const doc = new jsPDF();
     let yPosition = 20;
 
@@ -268,7 +268,7 @@ export const reportingService = {
     doc.save(`asset_inventory_report_${new Date().toISOString().split('T')[0]}.pdf`);
   },
 
-  async generateExcelReport(assets: Asset[], stats: any): Promise<void> {
+  async generateExcelReport(assets: Asset[], stats: Record<string, unknown>): Promise<void> {
     const workbook = XLSX.utils.book_new();
 
     // Summary sheet

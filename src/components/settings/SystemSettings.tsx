@@ -216,7 +216,7 @@ export const SystemSettings: React.FC = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'general' | 'security' | 'notifications' | 'integrations' | 'database' | 'advanced')}
                 className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600 bg-blue-50'
@@ -298,7 +298,7 @@ export const SystemSettings: React.FC = () => {
                     value={settings.general.theme}
                     onChange={(e) => setSettings(prev => ({
                       ...prev,
-                      general: { ...prev.general, theme: e.target.value as any }
+                      general: { ...prev.general, theme: e.target.value as 'light' | 'dark' | 'auto' }
                     }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -577,7 +577,7 @@ export const SystemSettings: React.FC = () => {
                       value={settings.database.backup_frequency}
                       onChange={(e) => setSettings(prev => ({
                         ...prev,
-                        database: { ...prev.database, backup_frequency: e.target.value as any }
+                        database: { ...prev.database, backup_frequency: e.target.value as 'daily' | 'weekly' | 'monthly' }
                       }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       disabled={!settings.database.backup_enabled}

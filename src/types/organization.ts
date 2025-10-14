@@ -4,7 +4,7 @@ export interface Organization {
   slug: string;
   description?: string;
   logo_url?: string;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   plan: 'free' | 'pro' | 'enterprise';
   created_at: Date;
   updated_at: Date;
@@ -16,7 +16,7 @@ export interface OrganizationMember {
   organization_id: string;
   user_id: string;
   role: 'owner' | 'admin' | 'editor' | 'viewer' | 'member';
-  permissions: Record<string, any>;
+  permissions: Record<string, unknown>;
   joined_at: Date;
   invited_by?: string;
   user?: {
@@ -50,8 +50,8 @@ export interface AuditLog {
   action: string;
   resource_type: string;
   resource_id?: string;
-  old_values?: Record<string, any>;
-  new_values?: Record<string, any>;
+  old_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   created_at: Date;
@@ -68,7 +68,7 @@ export interface Notification {
   type: string;
   title: string;
   message: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   read_at?: Date;
   created_at: Date;
 }
@@ -80,8 +80,8 @@ export interface Report {
   name: string;
   description?: string;
   type: 'asset_summary' | 'compliance' | 'risk_assessment' | 'vulnerability' | 'custom';
-  filters: Record<string, any>;
-  schedule: Record<string, any>;
+  filters: Record<string, unknown>;
+  schedule: Record<string, unknown>;
   format: 'pdf' | 'excel' | 'csv';
   is_public: boolean;
   last_generated?: Date;
@@ -94,7 +94,7 @@ export interface Integration {
   organization_id: string;
   name: string;
   type: 'email' | 'slack' | 'teams' | 'webhook' | 'api';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   is_active: boolean;
   last_sync?: Date;
   created_at: Date;

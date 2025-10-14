@@ -195,7 +195,7 @@ class PerformanceMonitor {
 // Memory usage monitoring
 export const monitorMemoryUsage = () => {
   if ('memory' in performance) {
-    const memory = (performance as any).memory;
+    const memory = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
     const memoryInfo = {
       usedJSHeapSize: memory.usedJSHeapSize,
       totalJSHeapSize: memory.totalJSHeapSize,
@@ -239,7 +239,7 @@ export const analyzeBundleSize = () => {
 };
 
 // Lazy loading utility for heavy components
-export const lazyLoadComponent = <T extends React.ComponentType<any>>(
+export const lazyLoadComponent = <T extends React.ComponentType<Record<string, unknown>>(
   importFn: () => Promise<{ default: T }>,
   fallback?: React.ComponentType
 ) => {

@@ -34,8 +34,8 @@ export const AssetRelationshipModal: React.FC<AssetRelationshipModalProps> = ({
       id: `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       relatedAssetId: '',
       relatedAssetName: '',
-      relationshipType: 'Depends On' as any,
-      strength: 'Medium' as any,
+      relationshipType: 'Depends On' as AssetRelationship['relationshipType'],
+      strength: 'Medium' as AssetRelationship['strength'],
     };
     setRelationships([...relationships, newRelationship]);
   };
@@ -185,7 +185,7 @@ export const AssetRelationshipModal: React.FC<AssetRelationshipModalProps> = ({
                           </label>
                           <select
                             value={relationship.relationshipType}
-                            onChange={(e) => updateRelationship(index, { relationshipType: e.target.value as any })}
+                            onChange={(e) => updateRelationship(index, { relationshipType: e.target.value as AssetRelationship['relationshipType'] })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           >
                             {relationshipTypes.map(type => (
@@ -201,7 +201,7 @@ export const AssetRelationshipModal: React.FC<AssetRelationshipModalProps> = ({
                           </label>
                           <select
                             value={relationship.strength}
-                            onChange={(e) => updateRelationship(index, { strength: e.target.value as any })}
+                            onChange={(e) => updateRelationship(index, { strength: e.target.value as AssetRelationship['strength'] })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           >
                             {strengthLevels.map(strength => (
