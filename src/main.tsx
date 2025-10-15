@@ -3,9 +3,13 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { setupGlobalErrorHandling } from './utils/monitoring';
+import { performanceMonitor } from './utils/performance';
 
 // Setup global error handling for production
 setupGlobalErrorHandling();
+
+// Initialize performance monitoring
+performanceMonitor;
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -19,6 +23,14 @@ try {
       <App />
     </StrictMode>
   );
+  
+  // Hide loading screen after app is rendered
+  setTimeout(() => {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+      loadingElement.classList.add('hidden');
+    }
+  }, 100);
 } catch (error) {
   console.error('Failed to initialize application:', error);
   

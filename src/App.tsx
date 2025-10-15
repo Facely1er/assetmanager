@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthGuard } from './components/auth/AuthGuard';
 import { StartScreen } from './components/StartScreen';
 import { MainLayout } from './components/MainLayout';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
 // Enhanced App component with production optimizations
 const App: React.FC = () => {
@@ -78,20 +79,30 @@ const App: React.FC = () => {
             }}
           />
           
-          {/* Application Content */}
-          {showStartScreen ? (
-            <StartScreen 
-              onGetStarted={handleGetStarted}
-              onLoadDemo={handleLoadDemo}
-            />
-          ) : (
-            <AuthGuard 
-              requireAuth={false}
-              fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}
-            >
-              <MainLayout onShowStartScreen={handleShowStartScreen} />
-            </AuthGuard>
-          )}
+          {/* Application Content with Suspense */}
+          <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+              <LoadingSpinner size="lg" text="Loading ERMITS CyberSoluce®..." />
+            </div>
+          }>
+            {showStartScreen ? (
+              <StartScreen 
+                onGetStarted={handleGetStarted}
+                onLoadDemo={handleLoadDemo}
+              />
+            ) : (
+              <AuthGuard 
+                requireAuth={false}
+                fallback={
+                  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                    <LoadingSpinner size="lg" text="Initializing..." />
+                  </div>
+                }
+              >
+                <MainLayout onShowStartScreen={handleShowStartScreen} />
+              </AuthGuard>
+            )}
+          </Suspense>
         </div>
       </AuthProvider>
     </ErrorBoundary>

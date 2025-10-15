@@ -16,7 +16,14 @@ export default defineConfig({
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@supabase/supabase-js'],
+    include: [
+      'react', 
+      'react-dom', 
+      '@supabase/supabase-js',
+      'react-hot-toast',
+      'date-fns',
+      'recharts'
+    ],
     exclude: ['lucide-react'],
   },
   esbuild: {
