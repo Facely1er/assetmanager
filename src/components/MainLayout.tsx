@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { NavigationSidebar } from './NavigationSidebar';
 import { DashboardHome } from './DashboardHome';
-import { AssetInventoryDashboard } from './AssetInventoryDashboard';
-import { UserManualPage } from './UserManualPage';
-import { GuidedWorkflow } from './GuidedWorkflow';
-import { AdvancedReportingDashboard } from './reports/AdvancedReportingDashboard';
-import { ComplianceManagement } from './compliance/ComplianceManagement';
-import { VulnerabilityDashboard } from './vulnerabilities/VulnerabilityDashboard';
-import { OrganizationManagement } from './organizations/OrganizationManagement';
-import { UserManagement } from './users/UserManagement';
-import { ActivityLog } from './activity/ActivityLog';
-import { SystemSettings } from './settings/SystemSettings';
+import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
 import { useAssetInventory } from '../hooks/useAssetInventory';
+
+// Lazy load heavy components to reduce initial bundle size
+const AssetInventoryDashboard = lazy(() => import('./AssetInventoryDashboard'));
+const UserManualPage = lazy(() => import('./UserManualPage'));
+const GuidedWorkflow = lazy(() => import('./GuidedWorkflow'));
+const AdvancedReportingDashboard = lazy(() => import('./reports/AdvancedReportingDashboard'));
+const ComplianceManagement = lazy(() => import('./compliance/ComplianceManagement'));
+const VulnerabilityDashboard = lazy(() => import('./vulnerabilities/VulnerabilityDashboard'));
+const OrganizationManagement = lazy(() => import('./organizations/OrganizationManagement'));
+const UserManagement = lazy(() => import('./users/UserManagement'));
+const ActivityLog = lazy(() => import('./activity/ActivityLog'));
+const SystemSettings = lazy(() => import('./settings/SystemSettings'));
 
 interface MainLayoutProps {
   onShowStartScreen: () => void;
@@ -36,6 +39,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
     setActiveView('settings');
   }, []);
 
+  const handleShowImport = React.useCallback(() => {
+    setActiveView('assets');
+  }, []);
+
+  const handleShowInventoryGenerator = React.useCallback(() => {
+    setActiveView('assets');
+  }, []);
+
+  const handleShowTeamManagement = React.useCallback(() => {
+    setActiveView('users');
+  }, []);
+
   const getCurrentStats = () => ({
     totalAssets: stats.total,
     hasAssets: stats.total > 0,
@@ -44,6 +59,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
   });
 
   const renderContent = () => {
+    const LoadingFallback = () => (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    );
+
     switch (activeView) {
       case 'dashboard':
         return (
@@ -55,33 +76,71 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
           />
         );
       case 'assets':
-        return <AssetInventoryDashboard />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <AssetInventoryDashboard />
+          </Suspense>
+        );
       case 'user-manual':
-        return <UserManualPage />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <UserManualPage />
+          </Suspense>
+        );
       case 'analytics':
-        return <AdvancedReportingDashboard />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <AdvancedReportingDashboard />
+          </Suspense>
+        );
       case 'workflow':
         return (
-          <GuidedWorkflow
-            onNavigate={setActiveView}
-            onShowImport={handleShowImport}
-            onShowInventoryGenerator={handleShowInventoryGenerator}
-            onShowTeamManagement={handleShowTeamManagement}
-            currentStats={getCurrentStats()}
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <GuidedWorkflow
+              onNavigate={setActiveView}
+              onShowImport={handleShowImport}
+              onShowInventoryGenerator={handleShowInventoryGenerator}
+              onShowTeamManagement={handleShowTeamManagement}
+              currentStats={getCurrentStats()}
+            />
+          </Suspense>
         );
       case 'compliance':
-        return <ComplianceManagement />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <ComplianceManagement />
+          </Suspense>
+        );
       case 'vulnerabilities':
-        return <VulnerabilityDashboard />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <VulnerabilityDashboard />
+          </Suspense>
+        );
       case 'organizations':
-        return <OrganizationManagement />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <OrganizationManagement />
+          </Suspense>
+        );
       case 'users':
-        return <UserManagement />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <UserManagement />
+          </Suspense>
+        );
       case 'activity':
-        return <ActivityLog />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <ActivityLog />
+          </Suspense>
+        );
       case 'settings':
-        return <SystemSettings />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <SystemSettings />
+          </Suspense>
+        );
       case 'help':
         return (
           <div className="p-8">

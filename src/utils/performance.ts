@@ -239,22 +239,6 @@ export const analyzeBundleSize = () => {
 };
 
 // Lazy loading utility for heavy components
-export const lazyLoadComponent = <T extends React.ComponentType<Record<string, unknown>>(
-  importFn: () => Promise<{ default: T }>,
-  fallback?: React.ComponentType
-) => {
-  return React.lazy(() => 
-    importFn().catch(error => {
-      console.error('Component lazy loading failed:', error);
-      // Return fallback component or error component
-      return Promise.resolve({ 
-        default: fallback || (() => React.createElement('div', { 
-          children: 'Component failed to load' 
-        })) as T 
-      });
-    })
-  );
-};
 
 // Create singleton instance
 export const performanceMonitor = new PerformanceMonitor();
