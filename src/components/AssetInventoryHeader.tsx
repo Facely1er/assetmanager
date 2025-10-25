@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Download, Upload, Plus, Trash2, Edit3, Shield, Building2, Filter } from 'lucide-react';
+import { Search, Download, Upload, Plus, Trash2, Edit3, Shield, Building2, Filter, BarChart3, TrendingUp, FileText, Database } from 'lucide-react';
 import { AssetFilters } from '../types/asset';
 
 interface AssetInventoryHeaderProps {
@@ -13,6 +13,10 @@ interface AssetInventoryHeaderProps {
   onAddAsset: () => void;
   onGenerateInventory?: () => void;
   onAdvancedFilters?: () => void;
+  onInsightsDashboard?: () => void;
+  onAdvancedVisualization?: () => void;
+  onAutomatedReporting?: () => void;
+  onExternalIntegration?: () => void;
 }
 
 export const AssetInventoryHeader: React.FC<AssetInventoryHeaderProps> = ({
@@ -26,6 +30,10 @@ export const AssetInventoryHeader: React.FC<AssetInventoryHeaderProps> = ({
   onAddAsset,
   onGenerateInventory,
   onAdvancedFilters,
+  onInsightsDashboard,
+  onAdvancedVisualization,
+  onAutomatedReporting,
+  onExternalIntegration,
 }) => {
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -41,6 +49,46 @@ export const AssetInventoryHeader: React.FC<AssetInventoryHeaderProps> = ({
         </div>
         
         <div className="flex items-center space-x-3">
+          {onInsightsDashboard && (
+            <button
+              onClick={onInsightsDashboard}
+              className="inline-flex items-center px-4 py-2 border border-green-300 rounded-lg text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Insights
+            </button>
+          )}
+          
+          {onAdvancedVisualization && (
+            <button
+              onClick={onAdvancedVisualization}
+              className="inline-flex items-center px-4 py-2 border border-indigo-300 rounded-lg text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Analytics
+            </button>
+          )}
+          
+          {onAutomatedReporting && (
+            <button
+              onClick={onAutomatedReporting}
+              className="inline-flex items-center px-4 py-2 border border-orange-300 rounded-lg text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Reports
+            </button>
+          )}
+          
+          {onExternalIntegration && (
+            <button
+              onClick={onExternalIntegration}
+              className="inline-flex items-center px-4 py-2 border border-cyan-300 rounded-lg text-sm font-medium text-cyan-700 bg-cyan-50 hover:bg-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+            >
+              <Database className="h-4 w-4 mr-2" />
+              Integrations
+            </button>
+          )}
+          
           {onAdvancedFilters && (
             <button
               onClick={onAdvancedFilters}

@@ -15,6 +15,10 @@ import { AdvancedFiltersModal } from './AdvancedFiltersModal';
 import { AssetRelationshipModal } from './AssetRelationshipModal';
 import { VulnerabilityManagementModal } from './VulnerabilityManagementModal';
 import { ErrorBoundary } from './ErrorBoundary';
+import { InsightsDashboard } from './InsightsDashboard';
+import { AdvancedDataVisualization } from './AdvancedDataVisualization';
+import { AutomatedReportingManager } from './reports/AutomatedReportingManager';
+import { ExternalDataIntegrationManager } from './integrations/ExternalDataIntegrationManager';
 import { exportToCSV } from '../utils/assetUtils';
 import { handleApiError, logError } from '../utils/errorHandling';
 import { SUCCESS_MESSAGES } from '../utils/constants';
@@ -58,6 +62,10 @@ export const AssetInventoryDashboard: React.FC = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
   const [showVulnerabilityModal, setShowVulnerabilityModal] = useState(false);
+  const [showInsightsDashboard, setShowInsightsDashboard] = useState(false);
+  const [showAdvancedVisualization, setShowAdvancedVisualization] = useState(false);
+  const [showAutomatedReporting, setShowAutomatedReporting] = useState(false);
+  const [showExternalIntegration, setShowExternalIntegration] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [relationshipAsset, setRelationshipAsset] = useState<Asset | null>(null);
   const [vulnerabilityAsset, setVulnerabilityAsset] = useState<Asset | null>(null);
@@ -309,6 +317,10 @@ export const AssetInventoryDashboard: React.FC = () => {
           onAddAsset={handleAddAsset}
           onGenerateInventory={handleGenerateInventory}
           onAdvancedFilters={() => setShowAdvancedFilters(true)}
+          onInsightsDashboard={() => setShowInsightsDashboard(true)}
+          onAdvancedVisualization={() => setShowAdvancedVisualization(true)}
+          onAutomatedReporting={() => setShowAutomatedReporting(true)}
+          onExternalIntegration={() => setShowExternalIntegration(true)}
         />
 
         {/* Stats Overview */}
@@ -428,6 +440,26 @@ export const AssetInventoryDashboard: React.FC = () => {
             onSave={handleSaveVulnerabilities}
           />
         )}
+
+        <InsightsDashboard
+          isOpen={showInsightsDashboard}
+          onClose={() => setShowInsightsDashboard(false)}
+          assets={assets}
+        />
+
+        <AdvancedDataVisualization
+          isOpen={showAdvancedVisualization}
+          onClose={() => setShowAdvancedVisualization(false)}
+          assets={assets}
+        />
+
+        <AutomatedReportingManager
+          onClose={() => setShowAutomatedReporting(false)}
+        />
+
+        <ExternalDataIntegrationManager
+          onClose={() => setShowExternalIntegration(false)}
+        />
 
         {/* Overlay for filters panel */}
         {isFiltersPanelOpen && (

@@ -15,7 +15,10 @@ import {
   Zap,
   LogOut,
   Target,
-  Play
+  Play,
+  Database,
+  Network,
+  Lock
 } from 'lucide-react';
 
 interface NavigationSidebarProps {
@@ -73,6 +76,24 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       label: 'Compliance',
       icon: FileText,
       description: 'Framework management'
+    },
+    {
+      id: 'privacy-compliance',
+      label: 'Privacy & Data',
+      icon: Database,
+      description: 'Privacy compliance & data protection'
+    },
+    {
+      id: 'dependencies',
+      label: 'Dependencies',
+      icon: Network,
+      description: 'Asset dependencies mapping'
+    },
+    {
+      id: 'data-protection',
+      label: 'Data Protection',
+      icon: Lock,
+      description: 'Security controls & data protection'
     },
     {
       id: 'vulnerabilities',

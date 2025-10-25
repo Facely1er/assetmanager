@@ -229,7 +229,127 @@ export const sampleAssets: Asset[] = [
     updatedAt: new Date('2024-01-10')
   },
   // Enhanced demo assets for comprehensive scenarios
-  ...enhancedSampleAssets
+  ...enhancedSampleAssets,
+  {
+    id: 'asset-009',
+    name: 'Customer Personal Data Repository',
+    type: 'Personal Data',
+    criticality: 'Critical',
+    owner: 'Data Protection Officer',
+    location: 'Data Center A',
+    description: 'Centralized repository for customer personal information including names, emails, and contact details',
+    complianceFrameworks: ['GDPR', 'CCPA', 'SOC 2'],
+    riskScore: 95,
+    lastAssessed: new Date('2024-01-25'),
+    tags: ['personal-data', 'customer-info', 'gdpr', 'encrypted'],
+    relationships: [
+      {
+        id: 'rel-006',
+        relatedAssetId: 'asset-002',
+        relatedAssetName: 'Customer Database',
+        relationshipType: 'Stores',
+        strength: 'Strong',
+        dataFlowDirection: 'Bidirectional',
+        isPersonalData: true,
+        purpose: 'Customer data storage and retrieval'
+      }
+    ],
+    vulnerabilities: [],
+    status: 'Active',
+    createdAt: new Date('2023-03-01'),
+    updatedAt: new Date('2024-01-25'),
+    dataClassification: 'Confidential',
+    dataTypes: ['PII', 'Contact Information', 'Customer Data'],
+    retentionPeriod: 2555, // 7 years
+    legalBasis: ['Consent', 'Contract'],
+    dataSubjectRights: ['Access', 'Rectification', 'Erasure', 'Portability'],
+    crossBorderTransfer: true,
+    thirdPartySharing: false,
+    encryptionStatus: 'Encrypted',
+    accessControls: [
+      {
+        id: 'ac-001',
+        type: 'Role-Based',
+        description: 'Role-based access control for customer data',
+        permissions: ['read', 'update'],
+        isActive: true,
+        lastReviewed: new Date('2024-01-01')
+      }
+    ],
+    privacyImpactAssessment: {
+      id: 'pia-001',
+      assessmentDate: new Date('2024-01-01'),
+      assessor: 'Data Protection Officer',
+      riskLevel: 'High',
+      findings: ['High volume of personal data', 'Cross-border transfers'],
+      recommendations: ['Implement additional encryption', 'Regular access reviews'],
+      status: 'Approved',
+      nextReviewDate: new Date('2024-07-01')
+    },
+    dataBreachHistory: [],
+    dependencies: [],
+    requirements: []
+  },
+  {
+    id: 'asset-010',
+    name: 'Employee Health Records',
+    type: 'Sensitive Data',
+    criticality: 'Critical',
+    owner: 'HR Department',
+    location: 'Data Center A',
+    description: 'Employee health information and medical records for insurance and compliance purposes',
+    complianceFrameworks: ['HIPAA', 'GDPR', 'SOC 2'],
+    riskScore: 88,
+    lastAssessed: new Date('2024-01-20'),
+    tags: ['health-data', 'employee-records', 'hipaa', 'sensitive'],
+    relationships: [
+      {
+        id: 'rel-007',
+        relatedAssetId: 'asset-003',
+        relatedAssetName: 'Corporate Email System',
+        relationshipType: 'Accesses',
+        strength: 'Medium',
+        dataFlowDirection: 'Inbound',
+        isPersonalData: true,
+        purpose: 'Email notifications for health benefits'
+      }
+    ],
+    vulnerabilities: [],
+    status: 'Active',
+    createdAt: new Date('2023-02-15'),
+    updatedAt: new Date('2024-01-20'),
+    dataClassification: 'Restricted',
+    dataTypes: ['PHI', 'Health Data', 'Employee Records'],
+    retentionPeriod: 2555, // 7 years
+    legalBasis: ['Legal Obligation', 'Vital Interests'],
+    dataSubjectRights: ['Access', 'Rectification', 'Erasure'],
+    crossBorderTransfer: false,
+    thirdPartySharing: true,
+    encryptionStatus: 'Encrypted',
+    accessControls: [
+      {
+        id: 'ac-002',
+        type: 'Mandatory',
+        description: 'Mandatory access control for health data',
+        permissions: ['read'],
+        isActive: true,
+        lastReviewed: new Date('2024-01-01')
+      }
+    ],
+    privacyImpactAssessment: {
+      id: 'pia-002',
+      assessmentDate: new Date('2024-01-01'),
+      assessor: 'Privacy Officer',
+      riskLevel: 'Critical',
+      findings: ['Highly sensitive health data', 'Third-party sharing'],
+      recommendations: ['Enhanced encryption', 'Regular audits'],
+      status: 'Approved',
+      nextReviewDate: new Date('2024-04-01')
+    },
+    dataBreachHistory: [],
+    dependencies: [],
+    requirements: []
+  }
 ];
 
 export const complianceFrameworks = [
@@ -249,7 +369,16 @@ export const assetTypes = [
   'Application',
   'Network',
   'Endpoint',
-  'Cloud Service'
+  'Cloud Service',
+  'Information Asset',
+  'Data Repository',
+  'API',
+  'File System',
+  'Document',
+  'Personal Data',
+  'Sensitive Data',
+  'Business Process',
+  'Third Party Service'
 ];
 
 export const criticalityLevels = [

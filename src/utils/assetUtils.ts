@@ -7,23 +7,42 @@ export const calculateAssetStats = (assets: Asset[]): AssetStats => {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
+  // Use single pass for better performance
+  let critical = 0;
+  let untagged = 0;
+  let recentlyAdded = 0;
+  const byType: Record<string, number> = {};
+  const byCriticality: Record<string, number> = {};
+  const byStatus: Record<string, number> = {};
+
+  for (const asset of assets) {
+    // Count critical assets
+    if (asset.criticality === 'Critical') critical++;
+    
+    // Count untagged assets
+    if (asset.tags.length === 0) untagged++;
+    
+    // Count recently added assets
+    if (asset.createdAt > thirtyDaysAgo) recentlyAdded++;
+    
+    // Count by type
+    byType[asset.type] = (byType[asset.type] || 0) + 1;
+    
+    // Count by criticality
+    byCriticality[asset.criticality] = (byCriticality[asset.criticality] || 0) + 1;
+    
+    // Count by status
+    byStatus[asset.status] = (byStatus[asset.status] || 0) + 1;
+  }
+
   return {
     total: assets.length,
-    critical: assets.filter(asset => asset.criticality === 'Critical').length,
-    untagged: assets.filter(asset => asset.tags.length === 0).length,
-    recentlyAdded: assets.filter(asset => asset.createdAt > thirtyDaysAgo).length,
-    byType: assets.reduce((acc, asset) => {
-      acc[asset.type] = (acc[asset.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    byCriticality: assets.reduce((acc, asset) => {
-      acc[asset.criticality] = (acc[asset.criticality] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    byStatus: assets.reduce((acc, asset) => {
-      acc[asset.status] = (acc[asset.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
+    critical,
+    untagged,
+    recentlyAdded,
+    byType,
+    byCriticality,
+    byStatus,
   };
 };
 

@@ -10,37 +10,24 @@ type AssetRow = Database['public']['Tables']['assets']['Row'];
 type AssetInsert = Database['public']['Tables']['assets']['Insert'];
 type AssetUpdate = Database['public']['Tables']['assets']['Update'];
 
-// Enhanced caching for better performance
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  ttl: number;
-}
+// Simplified cache implementation
+class SimpleCache<T> {
+  private cache = new Map<string, { data: T; timestamp: number }>();
+  private readonly ttl: number;
 
-class AssetCache {
-  private cache = new Map<string, CacheEntry<unknown>>();
-  private maxSize = 100;
-
-  set<T>(key: string, data: T, ttl = APP_CONFIG.CACHE.DEFAULT_TTL): void {
-    // Prevent cache from growing too large
-    if (this.cache.size >= this.maxSize) {
-      const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
-    }
-
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl
-    });
+  constructor(ttl = APP_CONFIG.CACHE.DEFAULT_TTL) {
+    this.ttl = ttl;
   }
 
-  get<T>(key: string): T | null {
+  set(key: string, data: T): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  get(key: string): T | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
 
-    // Check if entry has expired
-    if (Date.now() - entry.timestamp > entry.ttl) {
+    if (Date.now() - entry.timestamp > this.ttl) {
       this.cache.delete(key);
       return null;
     }
@@ -51,86 +38,75 @@ class AssetCache {
   clear(): void {
     this.cache.clear();
   }
-
-  size(): number {
-    return this.cache.size;
-  }
 }
 
-const assetCache = new AssetCache();
+const assetCache = new SimpleCache<Asset>();
 
 // Convert database row to Asset interface
-const mapRowToAsset = async (row: AssetRow, useCache = true): Promise<Asset> => {
+const mapRowToAsset = async (row: AssetRow): Promise<Asset> => {
   const cacheKey = `asset_${row.id}`;
-  
-  if (useCache) {
-    const cached = assetCache.get<Asset>(cacheKey);
-    if (cached) return cached;
-  }
+  const cached = assetCache.get(cacheKey);
+  if (cached) return cached;
 
   try {
-  // Get relationships
-    const { data: relationshipsData } = await retryRequest(() => supabase!
-    .from('asset_relationships')
-    .select(`
-      id,
-      relationship_type,
-      strength,
-        related_asset:assets!asset_relationships_target_asset_id_fkey(id, name)
-    `)
-      .eq('source_asset_id', row.id)
-    );
+    // Get relationships and vulnerabilities in parallel
+    const [relationshipsData, vulnerabilitiesData] = await Promise.all([
+      retryRequest(() => supabase!
+        .from('asset_relationships')
+        .select(`
+          id,
+          relationship_type,
+          strength,
+          related_asset:assets!asset_relationships_target_asset_id_fkey(id, name)
+        `)
+        .eq('source_asset_id', row.id)
+      ),
+      retryRequest(() => supabase!
+        .from('asset_vulnerabilities')
+        .select('*')
+        .eq('asset_id', row.id)
+      )
+    ]);
 
-  // Get vulnerabilities
-    const { data: vulnerabilitiesData } = await retryRequest(() => supabase!
-    .from('asset_vulnerabilities')
-    .select('*')
-      .eq('asset_id', row.id)
-    );
+    const relationships: AssetRelationship[] = relationshipsData?.data?.map(rel => ({
+      id: rel.id,
+      relatedAssetId: (rel.related_asset as { id: string })?.id || '',
+      relatedAssetName: (rel.related_asset as { name: string })?.name || '',
+      relationshipType: rel.relationship_type as AssetRelationship['relationshipType'],
+      strength: rel.strength as AssetRelationship['strength'],
+    })) || [];
 
-  const relationships: AssetRelationship[] = relationshipsData?.map(rel => ({
-    id: rel.id,
-    relatedAssetId: (rel.related_asset as { id: string })?.id || '',
-    relatedAssetName: (rel.related_asset as { name: string })?.name || '',
-    relationshipType: rel.relationship_type as AssetRelationship['relationshipType'],
-    strength: rel.strength as AssetRelationship['strength'],
-  })) || [];
-
-  const vulnerabilities: Vulnerability[] = vulnerabilitiesData?.map(vuln => ({
-    id: vuln.id,
-    cveId: vuln.cve_id,
-    severity: vuln.severity as Vulnerability['severity'],
-    title: vuln.title,
-    description: vuln.description,
-    discoveredAt: new Date(vuln.discovered_at),
-    status: vuln.status as Vulnerability['status'],
-  })) || [];
+    const vulnerabilities: Vulnerability[] = vulnerabilitiesData?.data?.map(vuln => ({
+      id: vuln.id,
+      cveId: vuln.cve_id,
+      severity: vuln.severity as Vulnerability['severity'],
+      title: vuln.title,
+      description: vuln.description,
+      discoveredAt: new Date(vuln.discovered_at),
+      status: vuln.status as Vulnerability['status'],
+    })) || [];
 
     const asset: Asset = {
-    id: row.id,
-    name: row.name,
-    type: row.type as Asset['type'],
-    criticality: row.criticality as Asset['criticality'],
-    owner: row.owner,
-    location: row.location,
-    ipAddress: row.ip_address,
-    description: row.description,
-    complianceFrameworks: row.compliance_frameworks,
-    riskScore: row.risk_score,
-    tags: row.tags,
-    status: row.status as Asset['status'],
-    lastAssessed: new Date(row.last_assessed),
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-    relationships,
-    vulnerabilities,
-  };
+      id: row.id,
+      name: row.name,
+      type: row.type as Asset['type'],
+      criticality: row.criticality as Asset['criticality'],
+      owner: row.owner,
+      location: row.location,
+      ipAddress: row.ip_address,
+      description: row.description,
+      complianceFrameworks: row.compliance_frameworks,
+      riskScore: row.risk_score,
+      tags: row.tags,
+      status: row.status as Asset['status'],
+      lastAssessed: new Date(row.last_assessed),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      relationships,
+      vulnerabilities,
+    };
 
-    // Cache the result
-    if (useCache) {
-      assetCache.set(cacheKey, asset);
-    }
-
+    assetCache.set(cacheKey, asset);
     return asset;
   } catch (error) {
     logError(error, 'mapRowToAsset', { assetId: row.id });
@@ -172,16 +148,15 @@ const mapAssetToUpdate = (asset: Partial<Asset>): AssetUpdate => ({
   updated_at: new Date().toISOString(),
 });
 
+// Simplified asset service with better error handling
 export const assetService = {
   // Get all assets for the current user
   async getAssets(): Promise<Asset[]> {
-    // Demo mode - return sample assets
     if (!isSupabaseEnabled || !supabase) {
-      return Promise.resolve(sampleAssets);
+      return sampleAssets;
     }
     
     try {
-      // Test connectivity before making requests
       const { checkSupabaseConnectivity } = await import('../lib/supabase');
       const isConnected = await checkSupabaseConnectivity();
       
@@ -189,23 +164,21 @@ export const assetService = {
         return sampleAssets;
       }
       
-      const result = await supabase!
+      const { data, error } = await supabase
         .from('assets')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1000);
       
-      if (result.error) {
-        logError(result.error, 'assetService.getAssets');
+      if (error) {
+        logError(error, 'assetService.getAssets');
         return sampleAssets;
       }
 
-      const assets = await Promise.all((result.data || []).map(row => mapRowToAsset(row)));
-
+      const assets = await Promise.all((data || []).map(row => mapRowToAsset(row)));
       return assets;
       
     } catch (error) {
-      // Check if it's a network error
       if (error instanceof Error && (
         error.message.includes('fetch') || 
         error.message.includes('network') ||
@@ -250,7 +223,6 @@ export const assetService = {
 
   // Create a new asset
   async createAsset(assetData: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'>): Promise<Asset> {
-    // Demo mode - simulate creation
     if (!isSupabaseEnabled || !supabase) {
       const newAsset: Asset = {
         ...assetData,
@@ -258,11 +230,10 @@ export const assetService = {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      return Promise.resolve(newAsset);
+      return newAsset;
     }
     
     try {
-      // Try to get user, but don't require authentication for demo
       const user = await supabase.auth.getUser();
       const userId = user.data.user?.id;
       if (!userId) {
@@ -270,7 +241,6 @@ export const assetService = {
       }
 
       const insertData = mapAssetToInsert(assetData, userId);
-
       const { data, error } = await supabase
         .from('assets')
         .insert(insertData)
@@ -283,17 +253,12 @@ export const assetService = {
 
       const newAsset = await mapRowToAsset(data);
 
-      // Handle relationships if provided
-      if (assetData.relationships && assetData.relationships.length > 0) {
-        await this.updateAssetRelationships(newAsset.id, assetData.relationships);
-      }
+      // Handle relationships and vulnerabilities in parallel
+      await Promise.all([
+        assetData.relationships?.length ? this.updateAssetRelationships(newAsset.id, assetData.relationships) : Promise.resolve(),
+        assetData.vulnerabilities?.length ? this.updateAssetVulnerabilities(newAsset.id, assetData.vulnerabilities) : Promise.resolve()
+      ]);
 
-      // Handle vulnerabilities if provided
-      if (assetData.vulnerabilities && assetData.vulnerabilities.length > 0) {
-        await this.updateAssetVulnerabilities(newAsset.id, assetData.vulnerabilities);
-      }
-
-      // Fetch the complete asset with relationships and vulnerabilities
       return await this.getAsset(newAsset.id) || newAsset;
     } catch (error) {
       console.error('Error creating asset:', error);
@@ -303,7 +268,6 @@ export const assetService = {
 
   // Update an existing asset
   async updateAsset(id: string, updates: Partial<Asset>): Promise<Asset> {
-    // Demo mode - simulate update
     if (!isSupabaseEnabled || !supabase) {
       const existingAsset = sampleAssets.find(asset => asset.id === id);
       if (!existingAsset) throw new Error('Asset not found');
@@ -313,12 +277,11 @@ export const assetService = {
         ...updates,
         updatedAt: new Date(),
       };
-      return Promise.resolve(updatedAsset);
+      return updatedAsset;
     }
     
     try {
       const updateData = mapAssetToUpdate(updates);
-
       const { data, error } = await supabase
         .from('assets')
         .update(updateData)
@@ -330,17 +293,12 @@ export const assetService = {
         throw new Error(handleSupabaseError(error));
       }
 
-      // Handle relationships update
-      if (updates.relationships !== undefined) {
-        await this.updateAssetRelationships(id, updates.relationships);
-      }
+      // Handle relationships and vulnerabilities updates in parallel
+      await Promise.all([
+        updates.relationships !== undefined ? this.updateAssetRelationships(id, updates.relationships) : Promise.resolve(),
+        updates.vulnerabilities !== undefined ? this.updateAssetVulnerabilities(id, updates.vulnerabilities) : Promise.resolve()
+      ]);
 
-      // Handle vulnerabilities update
-      if (updates.vulnerabilities !== undefined) {
-        await this.updateAssetVulnerabilities(id, updates.vulnerabilities);
-      }
-
-      // Fetch the complete updated asset
       return await this.getAsset(id) || await mapRowToAsset(data);
     } catch (error) {
       console.error('Error updating asset:', error);
@@ -350,9 +308,8 @@ export const assetService = {
 
   // Delete assets
   async deleteAssets(ids: string[]): Promise<void> {
-    // Demo mode - simulate deletion
     if (!isSupabaseEnabled || !supabase) {
-      return Promise.resolve();
+      return;
     }
     
     try {
@@ -372,6 +329,8 @@ export const assetService = {
 
   // Update asset relationships
   async updateAssetRelationships(assetId: string, relationships: AssetRelationship[]): Promise<void> {
+    if (!supabase) return;
+
     try {
       // Delete existing relationships
       await supabase
@@ -404,6 +363,8 @@ export const assetService = {
 
   // Update asset vulnerabilities
   async updateAssetVulnerabilities(assetId: string, vulnerabilities: Vulnerability[]): Promise<void> {
+    if (!supabase) return;
+
     try {
       // Delete existing vulnerabilities
       await supabase
@@ -440,8 +401,6 @@ export const assetService = {
   // Search assets
   async searchAssets(query: string): Promise<Asset[]> {
     if (!isSupabaseEnabled || !supabase) {
-      // Return filtered demo data in demo mode
-      const { sampleAssets } = await import('../data/sampleAssets');
       const lowercaseQuery = query.toLowerCase();
       return sampleAssets.filter(asset => 
         asset.name.toLowerCase().includes(lowercaseQuery) ||
@@ -472,4 +431,9 @@ export const assetService = {
       throw error;
     }
   },
+
+  // Clear cache
+  clearCache(): void {
+    assetCache.clear();
+  }
 };

@@ -1,161 +1,119 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { logError } from '../utils/errorHandling';
+import { createErrorHandler } from '../utils/errorHandling';
 
 interface Props {
   children: ReactNode;
-  fallback?: (error: Error, errorInfo: ErrorInfo) => ReactNode;
+  fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
-  errorId: string | null;
+  error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null,
-    errorId: null
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     return {
       hasError: true,
       error,
-      errorInfo: null,
-      errorId: `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const errorId = `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Enhanced error logging with context
-    logError(error, 'ErrorBoundary', {
-      errorId,
-      componentStack: errorInfo.componentStack,
-      errorBoundary: this.constructor.name
-    });
-    
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    const errorHandler = createErrorHandler('ErrorBoundary');
+    errorHandler(error, errorInfo);
+
     this.setState({
       error,
       errorInfo,
-      errorId
     });
-    
+
     // Call custom error handler if provided
-    this.props.onError?.(error, errorInfo);
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
   }
 
-  private handleRetry = () => {
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-      errorId: null
-    });
+  handleRetry = () => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
-  private handleGoHome = () => {
-    // Clear any corrupted state before navigation
-    try {
-      localStorage.removeItem('ermits-app-state');
-      sessionStorage.clear();
-    } catch {
-      // Ignore storage errors
-    }
-    window.location.href = '/';
-  };
-
-  private handleReportError = () => {
-    const subject = encodeURIComponent('Error Report - ERMITS CyberSoluce®');
-    const body = encodeURIComponent(`
-Error ID: ${this.state.errorId}
-Error Message: ${this.state.error?.message}
-Timestamp: ${new Date().toISOString()}
-URL: ${window.location.href}
-User Agent: ${navigator.userAgent}
-
-Additional Details:
-${this.state.error?.stack}
-    `);
-    window.open(`mailto:support@ermits-cybersoluce.com?subject=${subject}&body=${body}`);
-  };
-
-  public render() {
+  render() {
     if (this.state.hasError) {
-      // Use custom fallback if provided
-      if (this.props.fallback && this.state.error && this.state.errorInfo) {
-        return this.props.fallback(this.state.error, this.state.errorInfo);
+      // Custom fallback UI
+      if (this.props.fallback) {
+        return this.props.fallback;
       }
-      
+
+      // Default error UI
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" role="alert">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-red-100 rounded-full">
-                <AlertTriangle className="h-8 w-8 text-red-600" />
-              </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg
+                className="w-8 h-8 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
             </div>
-            <h1 className="text-2xl font-outfit font-bold text-gray-900 mb-2">
+            
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Something went wrong
-            </h1>
-            <p className="text-gray-600 mb-4">
-              We encountered an unexpected error while loading the application.
+            </h2>
+            
+            <p className="text-gray-600 mb-6">
+              We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
             </p>
-            
-            {this.state.errorId && (
-              <p className="text-sm text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg">
-                Error ID: <code className="font-mono">{this.state.errorId}</code>
-              </p>
-            )}
-            
-            <div className="grid grid-cols-1 gap-3 mb-6">
-              <button
-                onClick={this.handleRetry}
-                className="w-full inline-flex items-center justify-center px-4 py-3 bg-command-blue-600 text-white rounded-lg hover:bg-command-blue-700 focus:outline-none focus:ring-2 focus:ring-command-blue-500 focus:ring-offset-2 transition-colors font-medium"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </button>
-              <button
-                onClick={this.handleGoHome}
-                className="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Return Home
-              </button>
-              <button
-                onClick={this.handleReportError}
-                className="w-full text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                Report this issue to support
-              </button>
-            </div>
-            
+
             {import.meta.env.DEV && this.state.error && (
-              <details className="mt-6 text-left">
-                <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 rounded">
-                  Error Details
+              <details className="mb-6 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                  Error Details (Development)
                 </summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-3 rounded overflow-auto max-h-40 border font-mono">
-                  <strong>Error:</strong> {this.state.error.toString()}
+                <div className="mt-2 p-3 bg-gray-100 rounded text-xs font-mono text-gray-800 overflow-auto">
+                  <div className="mb-2">
+                    <strong>Error:</strong> {this.state.error.message}
+                  </div>
                   {this.state.error.stack && (
-                    <>
-                      <br /><br />
-                      <strong>Stack trace:</strong><br />
-                      {this.state.error.stack}
-                    </>
+                    <div>
+                      <strong>Stack:</strong>
+                      <pre className="whitespace-pre-wrap">{this.state.error.stack}</pre>
+                    </div>
                   )}
-                  {this.state.errorInfo?.componentStack}
-                </pre>
+                </div>
               </details>
             )}
+
+            <div className="space-y-3">
+              <button
+                onClick={this.handleRetry}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+              
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Refresh Page
+              </button>
+            </div>
           </div>
         </div>
       );
@@ -164,3 +122,29 @@ ${this.state.error?.stack}
     return this.props.children;
   }
 }
+
+// Higher-order component for error boundaries
+export const withErrorBoundary = <P extends object>(
+  Component: React.ComponentType<P>,
+  errorBoundaryProps?: Omit<Props, 'children'>
+) => {
+  const WrappedComponent = (props: P) => (
+    <ErrorBoundary {...errorBoundaryProps}>
+      <Component {...props} />
+    </ErrorBoundary>
+  );
+
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
+  
+  return WrappedComponent;
+};
+
+// Hook for error handling in functional components
+export const useErrorHandler = () => {
+  const handleError = React.useCallback((error: Error, context?: string) => {
+    const errorHandler = createErrorHandler(context || 'useErrorHandler');
+    errorHandler(error, { componentStack: '' });
+  }, []);
+
+  return { handleError };
+};

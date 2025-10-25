@@ -5,7 +5,6 @@ import { validateSearchQuery } from '../utils/validation';
 import { APP_CONFIG } from '../utils/constants';
 import { logError } from '../utils/errorHandling';
 import { assetService } from '../services/assetService';
-import { isSupabaseEnabled } from '../lib/supabase';
 import { sampleAssets } from '../data/sampleAssets';
 import toast from 'react-hot-toast';
 
@@ -50,9 +49,9 @@ export const useAssetInventory = () => {
         const assets = await assetService.getAssets();
         setState(prev => ({ ...prev, assets, loading: false }));
       } catch (error) {
-        // Fallback to sample assets on any error
+        logError(error, 'useAssetInventory.loadAssets');
         setState(prev => ({ ...prev, assets: sampleAssets, loading: false }));
-        toast('Using demo data - Supabase connection unavailable', {
+        toast('Using demo data - Database connection unavailable', {
           icon: 'ℹ️',
           duration: 3000
         });
@@ -210,6 +209,7 @@ export const useAssetInventory = () => {
       toast.success(`${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} deleted successfully`);
     } catch (error) {
       logError(error, 'useAssetInventory.deleteAssets');
+      toast.error('Failed to delete assets');
       throw error;
     }
   }, []);
@@ -227,6 +227,7 @@ export const useAssetInventory = () => {
       return newAsset;
     } catch (error) {
       logError(error, 'useAssetInventory.addAsset');
+      toast.error('Failed to create asset');
       throw error;
     }
   }, []);
@@ -255,6 +256,7 @@ export const useAssetInventory = () => {
       toast.success('Asset updated successfully');
     } catch (error) {
       logError(error, 'useAssetInventory.updateAsset');
+      toast.error('Failed to update asset');
       throw error;
     }
   }, [state.assets]);

@@ -1,113 +1,120 @@
-import { ERROR_MESSAGES } from './constants';
-import { isSupabaseEnabled } from '../lib/supabase';
+import { APP_CONFIG, ERROR_MESSAGES } from './constants';
 
-export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly isOperational: boolean;
-  public readonly timestamp: Date;
-  public readonly context?: string;
-
-  constructor(
-    message: string, 
-    statusCode: number = 500, 
-    isOperational: boolean = true,
-    context?: string
-  ) {
-    super(message);
-    this.statusCode = statusCode;
-    this.isOperational = isOperational;
-    this.timestamp = new Date();
-    this.context = context;
-    
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-// Enhanced error categorization and handling
-export const handleApiError = (error: unknown): string => {
-  if (error instanceof AppError) {
-    return error.message;
-  }
-
-  if (error instanceof Error) {
-    // Enhanced network error detection
-    if (error.message.includes('fetch') || 
-        error.message.includes('NetworkError') ||
-        error.message.includes('ERR_NETWORK') ||
-        error.name === 'TypeError') {
-      return ERROR_MESSAGES.NETWORK_ERROR;
-    }
-    
-    // Database connection errors
-    if (error.message.includes('connection') || 
-        error.message.includes('timeout')) {
-      return 'Database connection issue. Please try again.';
-    }
-    
-    return error.message;
-  }
-
-  // Enhanced HTTP status code handling
-  if (typeof error === 'object' && error !== null && 'status' in error) {
-    const status = (error as { status: number }).status;
-    switch (status) {
-      case 401:
-        return ERROR_MESSAGES.UNAUTHORIZED;
-      case 403:
-        return ERROR_MESSAGES.FORBIDDEN;
-      case 404:
-        return ERROR_MESSAGES.NOT_FOUND;
-      case 409:
-        return 'Conflict: This operation conflicts with existing data.';
-      case 422:
-        return 'Invalid data provided. Please check your input.';
-      case 429:
-        return 'Too many requests. Please wait and try again.';
-      case 500:
-      case 502:
-      case 503:
-      case 504:
-        return ERROR_MESSAGES.SERVER_ERROR;
-      default:
-        return `Server responded with status ${status}. Please try again.`;
-    }
-  }
-
-  return 'An unexpected error occurred';
-};
-
-// Production-ready error logging with structured data
-export const logError = (error: unknown, context?: string, additionalData?: Record<string, unknown>) => {
+// Enhanced error logging with context
+export const logError = (error: unknown, context: string, metadata?: Record<string, unknown>) => {
   const errorInfo = {
     message: error instanceof Error ? error.message : 'Unknown error',
     stack: error instanceof Error ? error.stack : undefined,
     context,
-    additionalData,
+    metadata,
     timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent,
     url: window.location.href,
-    supabaseEnabled: isSupabaseEnabled,
-    environment: import.meta.env.MODE
   };
 
-  // Enhanced production error logging
-  if (import.meta.env.PROD) {
-    // Send to external monitoring service in production
-    if (import.meta.env.VITE_SENTRY_DSN) {
-      // In a real implementation, send to Sentry
-      sendToMonitoringService(errorInfo);
-    }
-    // Always log to console for server-side monitoring
-    console.error('Production Error:', JSON.stringify(errorInfo, null, 2));
-  } else {
-    // Detailed logging in development
-    console.group('🐛 Development Error');
-    console.error('Error:', error);
-    console.table(errorInfo);
-    console.groupEnd();
+  // Log to console in development
+  if (import.meta.env.DEV) {
+    console.error(`[${context}]`, errorInfo);
+  }
+
+  // In production, you might want to send to an error reporting service
+  if (import.meta.env.PROD && APP_CONFIG.FEATURE_FLAGS.ENABLE_ERROR_REPORTING) {
+    // Example: Send to error reporting service
+    // errorReportingService.captureException(error, { extra: errorInfo });
   }
 };
 
-const sendToMonitoringService = (errorInfo: Record<string, unknown>) => {
-  // Implementation for sending to monitoring service
+// Simplified error handling for API calls
+export const handleApiError = (error: unknown, fallbackMessage?: string): string => {
+  logError(error, 'handleApiError');
+
+  if (error instanceof Error) {
+    // Network errors
+    if (error.message.includes('fetch') || error.message.includes('network')) {
+      return ERROR_MESSAGES.NETWORK_ERROR;
+    }
+
+    // Timeout errors
+    if (error.message.includes('timeout')) {
+      return ERROR_MESSAGES.CONNECTION_TIMEOUT;
+    }
+
+    // Return the error message if it's user-friendly
+    if (error.message.length < 100 && !error.message.includes('Error:')) {
+      return error.message;
+    }
+  }
+
+  return fallbackMessage || ERROR_MESSAGES.SERVER_ERROR;
+};
+
+// Retry mechanism for failed operations
+export const withRetry = async <T>(
+  operation: () => Promise<T>,
+  maxRetries: number = APP_CONFIG.RETRY.MAX_ATTEMPTS,
+  delay: number = APP_CONFIG.RETRY.BASE_DELAY
+): Promise<T> => {
+  let lastError: Error;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+
+      // Don't retry on certain errors
+      if (error instanceof Error && (
+        error.message.includes('401') || 
+        error.message.includes('403') ||
+        error.message.includes('404')
+      )) {
+        throw error;
+      }
+
+      if (attempt === maxRetries) {
+        throw lastError;
+      }
+
+      // Exponential backoff
+      const waitTime = Math.min(delay * Math.pow(2, attempt - 1), APP_CONFIG.RETRY.MAX_DELAY);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+
+  throw lastError!;
+};
+
+// Error boundary helper
+export const createErrorHandler = (context: string) => {
+  return (error: Error, errorInfo: { componentStack: string }) => {
+    logError(error, `${context}.ErrorBoundary`, {
+      componentStack: errorInfo.componentStack,
+    });
+  };
+};
+
+// Validation error formatter
+export const formatValidationErrors = (errors: Record<string, string[]>): string => {
+  const errorMessages = Object.entries(errors)
+    .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+    .join('; ');
+  
+  return `Validation failed: ${errorMessages}`;
+};
+
+// Network status checker
+export const isOnline = (): boolean => {
+  return navigator.onLine;
+};
+
+// Debounced error handler to prevent spam
+let errorTimeout: NodeJS.Timeout | null = null;
+export const debouncedErrorLog = (error: unknown, context: string, delay = 1000) => {
+  if (errorTimeout) {
+    clearTimeout(errorTimeout);
+  }
+  
+  errorTimeout = setTimeout(() => {
+    logError(error, context);
+  }, delay);
 };

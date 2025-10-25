@@ -1,11 +1,10 @@
 export const APP_CONFIG = {
   NAME: 'ERMITS CyberSoluce®',
   VERSION: '1.0.0',
-  API_TIMEOUT: import.meta.env.PROD ? 10000 : 30000, // Shorter timeout in production
+  API_TIMEOUT: import.meta.env.PROD ? 10000 : 30000,
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
-  SUPPORTED_FILE_TYPES: ['.csv', '.xlsx', '.json'],
+  SUPPORTED_FILE_TYPES: ['.csv', '.xlsx', '.json'] as const,
   
-  // Enhanced configuration for production
   CACHE: {
     DEFAULT_TTL: 5 * 60 * 1000, // 5 minutes
     MAX_ENTRIES: 100,
@@ -21,20 +20,21 @@ export const APP_CONFIG = {
   PAGINATION: {
     DEFAULT_PAGE_SIZE: 25,
     MAX_PAGE_SIZE: 100,
-    PAGE_SIZE_OPTIONS: [10, 25, 50, 100]
+    PAGE_SIZE_OPTIONS: [10, 25, 50, 100] as const
   },
+  
   SEARCH: {
     DEBOUNCE_DELAY: 300,
     MIN_SEARCH_LENGTH: 2,
     MAX_SEARCH_LENGTH: 100,
-    MAX_RESULTS: 1000 // Prevent memory issues with large datasets
+    MAX_RESULTS: 1000
   },
   
   ASSET_LIMITS: {
     MAX_TAGS: 20,
     MAX_RELATIONSHIPS: 50,
     MAX_VULNERABILITIES: 100,
-    MAX_BULK_OPERATIONS: 50 // Limit bulk operations for performance
+    MAX_BULK_OPERATIONS: 50
   },
   
   PERFORMANCE: {
