@@ -22,9 +22,9 @@ export default defineConfig({
       '@supabase/supabase-js',
       'react-hot-toast',
       'date-fns',
-      'recharts'
+      'recharts',
+      'lucide-react'
     ],
-    exclude: ['lucide-react'],
   },
   esbuild: {
     // Remove console.log in production
@@ -45,20 +45,14 @@ export default defineConfig({
     // Enhanced bundle optimization
     rollupOptions: {
       output: {
-        // Improved chunk splitting strategy
+        // Optimized chunk splitting strategy
         manualChunks: {
-          // Core React dependencies
           'react-vendor': ['react', 'react-dom'],
-          // Authentication and database
           'supabase': ['@supabase/supabase-js'],
-          // Utility libraries
           'utilities': ['date-fns', 'react-hot-toast'],
-          // UI components and icons
-          icons: ['lucide-react'],
-          // Chart libraries
-          charts: ['recharts'],
-          // Office document handling
-          'office-docs': ['xlsx', 'jspdf', 'html2canvas'],
+          'ui': ['lucide-react'],
+          'charts': ['recharts'],
+          'office': ['xlsx', 'jspdf', 'html2canvas'],
         },
         // Optimize asset filenames
         assetFileNames: (assetInfo) => {

@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useCallback } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -7,19 +7,19 @@ import { StartScreen } from './components/StartScreen';
 import { MainLayout } from './components/MainLayout';
 import { LoadingSpinner } from './components/LoadingSpinner';
 
-// Enhanced App component with production optimizations
+// Simplified App component with better performance
 const App: React.FC = () => {
   const [showStartScreen, setShowStartScreen] = useState(true);
 
-  const handleGetStarted = React.useCallback(() => {
+  const handleGetStarted = useCallback(() => {
     setShowStartScreen(false);
   }, []);
 
-  const handleLoadDemo = React.useCallback(() => {
+  const handleLoadDemo = useCallback(() => {
     setShowStartScreen(false);
   }, []);
 
-  const handleShowStartScreen = React.useCallback(() => {
+  const handleShowStartScreen = useCallback(() => {
     setShowStartScreen(true);
   }, []);
 
