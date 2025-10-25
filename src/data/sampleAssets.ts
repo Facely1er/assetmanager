@@ -1,4 +1,5 @@
 import { Asset } from '../types/asset';
+import { enhancedSampleAssets } from './enhancedSampleAssets';
 
 export const sampleAssets: Asset[] = [
   {
@@ -226,7 +227,9 @@ export const sampleAssets: Asset[] = [
     status: 'Active',
     createdAt: new Date('2023-10-01'),
     updatedAt: new Date('2024-01-10')
-  }
+  },
+  // Enhanced demo assets for comprehensive scenarios
+  ...enhancedSampleAssets
 ];
 
 export const complianceFrameworks = [

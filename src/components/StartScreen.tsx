@@ -18,9 +18,10 @@ import {
 interface StartScreenProps {
   onGetStarted: () => void;
   onLoadDemo: () => void;
+  onShowDemoScenarios?: () => void;
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDemo }) => {
+export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDemo, onShowDemoScenarios }) => {
   const { user } = useAuth();
 
   const stats = [
@@ -134,6 +135,16 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
                 <BookOpen className="h-5 w-5 mr-2" />
                 View Demo
               </button>
+              
+              {onShowDemoScenarios && (
+                <button
+                  onClick={onShowDemoScenarios}
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-action-cyan-600 to-action-cyan-700 text-white text-lg font-semibold rounded-xl hover:from-action-cyan-700 hover:to-action-cyan-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  <Award className="h-5 w-5 mr-2" />
+                  Demo Scenarios
+                </button>
+              )}
             </div>
 
             {/* Stats */}
