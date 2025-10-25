@@ -11,6 +11,9 @@ const UserManualPage = lazy(() => import('./UserManualPage'));
 const GuidedWorkflow = lazy(() => import('./GuidedWorkflow'));
 const AdvancedReportingDashboard = lazy(() => import('./reports/AdvancedReportingDashboard'));
 const ComplianceManagement = lazy(() => import('./compliance/ComplianceManagement'));
+const PrivacyComplianceDashboard = lazy(() => import('./privacy/PrivacyComplianceDashboard'));
+const DependenciesMappingDashboard = lazy(() => import('./dependencies/DependenciesMappingDashboard'));
+const DataProtectionDashboard = lazy(() => import('./protection/DataProtectionDashboard'));
 const VulnerabilityDashboard = lazy(() => import('./vulnerabilities/VulnerabilityDashboard'));
 const OrganizationManagement = lazy(() => import('./organizations/OrganizationManagement'));
 const UserManagement = lazy(() => import('./users/UserManagement'));
@@ -109,6 +112,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
         return (
           <Suspense fallback={<LoadingFallback />}>
             <ComplianceManagement />
+          </Suspense>
+        );
+      case 'privacy-compliance':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <PrivacyComplianceDashboard />
+          </Suspense>
+        );
+      case 'dependencies':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <DependenciesMappingDashboard />
+          </Suspense>
+        );
+      case 'data-protection':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <DataProtectionDashboard />
           </Suspense>
         );
       case 'vulnerabilities':
