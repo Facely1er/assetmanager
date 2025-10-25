@@ -2,8 +2,8 @@
 export interface Asset {
   readonly id: string;
   name: string;
-  type: AssetType;
-  criticality: CriticalityLevel;
+  type: 'Server' | 'Database' | 'Application' | 'Network' | 'Endpoint' | 'Cloud Service' | 'Information Asset' | 'Data Repository' | 'API' | 'File System' | 'Document' | 'Personal Data' | 'Sensitive Data' | 'Business Process' | 'Third Party Service';
+  criticality: 'Critical' | 'High' | 'Medium' | 'Low';
   owner: string;
   location: string;
   ipAddress?: string;
@@ -11,12 +11,27 @@ export interface Asset {
   complianceFrameworks: readonly string[];
   riskScore: number; // 0-100
   lastAssessed: Date;
-  tags: readonly string[];
-  relationships: readonly AssetRelationship[];
-  vulnerabilities: readonly Vulnerability[];
-  status: AssetStatus;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  tags: string[];
+  relationships: AssetRelationship[];
+  vulnerabilities: Vulnerability[];
+  status: 'Active' | 'Inactive' | 'Retired' | 'Planned';
+  createdAt: Date;
+  updatedAt: Date;
+  // Privacy and compliance specific fields
+  dataClassification: 'Public' | 'Internal' | 'Confidential' | 'Restricted' | 'Top Secret';
+  dataTypes: string[]; // e.g., ['PII', 'PHI', 'Financial', 'Intellectual Property']
+  retentionPeriod?: number; // in days
+  legalBasis: string[]; // GDPR legal basis for processing
+  dataSubjectRights: string[]; // Rights applicable to this data
+  crossBorderTransfer: boolean;
+  thirdPartySharing: boolean;
+  encryptionStatus: 'Encrypted' | 'Not Encrypted' | 'Partially Encrypted' | 'Unknown';
+  accessControls: AccessControl[];
+  privacyImpactAssessment: PrivacyImpactAssessment | null;
+  dataBreachHistory: DataBreach[];
+  // Dependencies and requirements
+  dependencies: AssetDependency[];
+  requirements: ComplianceRequirement[];
   // Temporary field for bulk editing
   addTags?: string;
 }
@@ -30,8 +45,11 @@ export interface AssetRelationship {
   readonly id: string;
   relatedAssetId: string;
   relatedAssetName: string;
-  relationshipType: RelationshipType;
-  strength: RelationshipStrength;
+  relationshipType: 'Depends On' | 'Connects To' | 'Hosts' | 'Manages' | 'Accesses' | 'Processes' | 'Stores' | 'Transmits' | 'Shares' | 'Backs Up' | 'Replicates' | 'Synchronizes';
+  strength: 'Strong' | 'Medium' | 'Weak';
+  dataFlowDirection: 'Inbound' | 'Outbound' | 'Bidirectional' | 'None';
+  isPersonalData: boolean;
+  purpose: string; // Purpose of the relationship
 }
 
 export type RelationshipType = 'Depends On' | 'Connects To' | 'Hosts' | 'Manages' | 'Accesses';
@@ -84,6 +102,92 @@ export interface AssetInventoryState {
   searchDebounce: number;
 }
 
+// New interfaces for privacy and compliance
+export interface AccessControl {
+  id: string;
+  type: 'Role-Based' | 'Attribute-Based' | 'Rule-Based' | 'Mandatory' | 'Discretionary';
+  description: string;
+  permissions: string[];
+  isActive: boolean;
+  lastReviewed: Date;
+}
+
+export interface PrivacyImpactAssessment {
+  id: string;
+  assessmentDate: Date;
+  assessor: string;
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  findings: string[];
+  recommendations: string[];
+  status: 'Draft' | 'Under Review' | 'Approved' | 'Needs Update';
+  nextReviewDate: Date;
+}
+
+export interface DataBreach {
+  id: string;
+  incidentDate: Date;
+  discoveryDate: Date;
+  description: string;
+  severity: 'Low' | 'Medium' | 'High' | 'Critical';
+  affectedRecords: number;
+  status: 'Open' | 'Under Investigation' | 'Resolved' | 'Closed';
+  regulatoryNotification: boolean;
+  notificationDate?: Date;
+}
+
+export interface AssetDependency {
+  id: string;
+  dependentAssetId: string;
+  dependentAssetName: string;
+  dependencyType: 'Technical' | 'Data' | 'Process' | 'Compliance' | 'Operational';
+  criticality: 'Critical' | 'High' | 'Medium' | 'Low';
+  description: string;
+  isActive: boolean;
+  lastValidated: Date;
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+}
+
+export interface ComplianceRequirement {
+  id: string;
+  framework: string;
+  requirementId: string;
+  title: string;
+  description: string;
+  category: 'Technical' | 'Organizational' | 'Physical' | 'Administrative';
+  priority: 'Critical' | 'High' | 'Medium' | 'Low';
+  status: 'Not Started' | 'In Progress' | 'Completed' | 'Non-Applicable' | 'Exempt';
+  dueDate?: Date;
+  responsible: string;
+  evidence: string[];
+  lastReviewed: Date;
+  nextReviewDate: Date;
+}
+
+export interface PrivacyRegulation {
+  id: string;
+  name: string;
+  jurisdiction: string;
+  effectiveDate: Date;
+  description: string;
+  requirements: ComplianceRequirement[];
+  applicableTo: string[]; // Asset types this applies to
+  penalties: {
+    maxFine: number;
+    currency: string;
+    description: string;
+  };
+}
+
+export interface DataSubjectRight {
+  id: string;
+  name: string;
+  description: string;
+  applicableRegulations: string[];
+  responseTimeframe: number; // in days
+  isAutomated: boolean;
+  requiresVerification: boolean;
+}
+
 export interface AssetStats {
   total: number;
   critical: number;
@@ -92,4 +196,10 @@ export interface AssetStats {
   byType: Record<string, number>;
   byCriticality: Record<string, number>;
   byStatus: Record<string, number>;
+  byDataClassification: Record<string, number>;
+  byEncryptionStatus: Record<string, number>;
+  privacyCompliant: number;
+  withPIA: number;
+  crossBorderTransfer: number;
+  thirdPartySharing: number;
 }
