@@ -1,59 +1,73 @@
+// Enhanced Asset type with better validation and constraints
 export interface Asset {
-  id: string;
+  readonly id: string;
   name: string;
-  type: 'Server' | 'Database' | 'Application' | 'Network' | 'Endpoint' | 'Cloud Service';
-  criticality: 'Critical' | 'High' | 'Medium' | 'Low';
+  type: AssetType;
+  criticality: CriticalityLevel;
   owner: string;
   location: string;
   ipAddress?: string;
   description: string;
-  complianceFrameworks: string[];
-  riskScore: number;
+  complianceFrameworks: readonly string[];
+  riskScore: number; // 0-100
   lastAssessed: Date;
-  tags: string[];
-  relationships: AssetRelationship[];
-  vulnerabilities: Vulnerability[];
-  status: 'Active' | 'Inactive' | 'Retired' | 'Planned';
-  createdAt: Date;
-  updatedAt: Date;
+  tags: readonly string[];
+  relationships: readonly AssetRelationship[];
+  vulnerabilities: readonly Vulnerability[];
+  status: AssetStatus;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
   // Temporary field for bulk editing
   addTags?: string;
 }
 
+// Extract enums for better type safety
+export type AssetType = 'Server' | 'Database' | 'Application' | 'Network' | 'Endpoint' | 'Cloud Service';
+export type CriticalityLevel = 'Critical' | 'High' | 'Medium' | 'Low';
+export type AssetStatus = 'Active' | 'Inactive' | 'Retired' | 'Planned';
+
 export interface AssetRelationship {
-  id: string;
+  readonly id: string;
   relatedAssetId: string;
   relatedAssetName: string;
-  relationshipType: 'Depends On' | 'Connects To' | 'Hosts' | 'Manages' | 'Accesses';
-  strength: 'Strong' | 'Medium' | 'Weak';
+  relationshipType: RelationshipType;
+  strength: RelationshipStrength;
 }
 
+export type RelationshipType = 'Depends On' | 'Connects To' | 'Hosts' | 'Manages' | 'Accesses';
+export type RelationshipStrength = 'Strong' | 'Medium' | 'Weak';
+
 export interface Vulnerability {
-  id: string;
+  readonly id: string;
   cveId?: string;
-  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  severity: VulnerabilitySeverity;
   title: string;
   description: string;
   discoveredAt: Date;
-  status: 'Open' | 'In Progress' | 'Resolved' | 'Accepted Risk';
+  status: VulnerabilityStatus;
 }
+
+export type VulnerabilitySeverity = 'Critical' | 'High' | 'Medium' | 'Low';
+export type VulnerabilityStatus = 'Open' | 'In Progress' | 'Resolved' | 'Accepted Risk';
 
 export interface AssetFilters {
   search: string;
-  types: string[];
-  criticalities: string[];
+  types: AssetType[];
+  criticalities: CriticalityLevel[];
   owners: string[];
   locations: string[];
   complianceFrameworks: string[];
-  status: string[];
+  status: AssetStatus[];
   tags: string[];
   riskScoreRange: [number, number];
 }
 
 export interface SortConfig {
   key: keyof Asset | null;
-  direction: 'asc' | 'desc';
+  direction: SortDirection;
 }
+
+export type SortDirection = 'asc' | 'desc';
 
 export interface AssetInventoryState {
   assets: Asset[];

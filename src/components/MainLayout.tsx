@@ -1,11 +1,11 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useCallback } from 'react';
 import { NavigationSidebar } from './NavigationSidebar';
 import { DashboardHome } from './DashboardHome';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
 import { useAssetInventory } from '../hooks/useAssetInventory';
 
-// Lazy load heavy components to reduce initial bundle size
+// Lazy load components for better performance
 const AssetInventoryDashboard = lazy(() => import('./AssetInventoryDashboard'));
 const UserManualPage = lazy(() => import('./UserManualPage'));
 const GuidedWorkflow = lazy(() => import('./GuidedWorkflow'));
@@ -27,27 +27,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
   const { user, signOut } = useAuth();
   const { stats } = useAssetInventory();
 
-  const handleNavigateToAssets = React.useCallback(() => {
+  const handleNavigateToAssets = useCallback(() => {
     setActiveView('assets');
   }, []);
 
-  const handleNavigateToReports = React.useCallback(() => {
+  const handleNavigateToReports = useCallback(() => {
     setActiveView('analytics');
   }, []);
 
-  const handleNavigateToSettings = React.useCallback(() => {
+  const handleNavigateToSettings = useCallback(() => {
     setActiveView('settings');
   }, []);
 
-  const handleShowImport = React.useCallback(() => {
+  const handleShowImport = useCallback(() => {
     setActiveView('assets');
   }, []);
 
-  const handleShowInventoryGenerator = React.useCallback(() => {
+  const handleShowInventoryGenerator = useCallback(() => {
     setActiveView('assets');
   }, []);
 
-  const handleShowTeamManagement = React.useCallback(() => {
+  const handleShowTeamManagement = useCallback(() => {
     setActiveView('users');
   }, []);
 
