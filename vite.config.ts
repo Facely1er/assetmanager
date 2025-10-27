@@ -1,10 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Bundle analyzer - generates stats.html when ANALYZE=true
+    process.env.ANALYZE === 'true' && visualizer({
+      filename: './dist/stats.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap', // treemap, sunburst, network
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
@@ -19,11 +30,18 @@ export default defineConfig({
     include: [
       'react', 
       'react-dom', 
+      'react/jsx-runtime',
       '@supabase/supabase-js',
       'react-hot-toast',
       'date-fns',
       'recharts',
       'lucide-react'
+    ],
+    // Exclude heavy libraries from pre-bundling to enable better code splitting
+    exclude: [
+      'xlsx',
+      'jspdf', 
+      'html2canvas'
     ],
   },
   esbuild: {
@@ -45,15 +63,71 @@ export default defineConfig({
     // Enhanced bundle optimization
     rollupOptions: {
       output: {
-        // Optimized chunk splitting strategy
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'supabase': ['@supabase/supabase-js'],
-          'utilities': ['date-fns', 'react-hot-toast'],
-          'ui': ['lucide-react'],
-          'charts': ['recharts'],
-          'office': ['xlsx', 'jspdf', 'html2canvas'],
+        // Optimized chunk splitting strategy with granular vendor splitting
+        manualChunks: (id) => {
+          // Core React libraries
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          // Supabase
+          if (id.includes('node_modules/@supabase')) {
+            return 'supabase';
+          }
+          // Date utilities
+          if (id.includes('node_modules/date-fns')) {
+            return 'date-utils';
+          }
+          // Toast notifications
+          if (id.includes('node_modules/react-hot-toast')) {
+            return 'toast';
+          }
+          // Icons
+          if (id.includes('node_modules/lucide-react')) {
+            return 'icons';
+          }
+          // Charts library
+          if (id.includes('node_modules/recharts')) {
+            return 'charts';
+          }
+          // Office/Export utilities
+          if (id.includes('node_modules/xlsx') || 
+              id.includes('node_modules/jspdf') || 
+              id.includes('node_modules/html2canvas')) {
+            return 'office-utils';
+          }
+          // Split large component groups
+          if (id.includes('/src/components/reports/')) {
+            return 'reports';
+          }
+          if (id.includes('/src/components/compliance/')) {
+            return 'compliance';
+          }
+          if (id.includes('/src/components/vulnerabilities/')) {
+            return 'vulnerabilities';
+          }
+          if (id.includes('/src/components/organizations/')) {
+            return 'organizations';
+          }
+          if (id.includes('/src/components/privacy/')) {
+            return 'privacy';
+          }
+          if (id.includes('/src/components/protection/')) {
+            return 'protection';
+          }
+          if (id.includes('/src/components/dependencies/')) {
+            return 'dependencies';
+          }
+          if (id.includes('/src/services/')) {
+            return 'services';
+          }
+          // Other node_modules as vendor
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
+        // Optimize chunk file naming
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        entryFileNames: 'entries/[name]-[hash].js',
         // Optimize asset filenames
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('.');
@@ -64,14 +138,23 @@ export default defineConfig({
           if (/woff2?|eot|ttf|otf/i.test(ext)) {
             return `fonts/[name]-[hash][extname]`;
           }
+          if (/css/i.test(ext)) {
+            return `styles/[name]-[hash][extname]`;
+          }
           return `assets/[name]-[hash][extname]`;
         }
       }
     },
     // Reduce chunk size warning limit for better performance
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 400,
     // Target modern browsers for smaller bundle
     target: 'esnext',
+    // CSS code splitting
+    cssCodeSplit: true,
+    // Improve tree shaking
+    modulePreload: {
+      polyfill: false
+    },
   },
   // Enhanced development server configuration
   server: {
