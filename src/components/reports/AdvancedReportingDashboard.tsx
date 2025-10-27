@@ -3,7 +3,7 @@ import { BarChart3, Download, Calendar, Filter, TrendingUp, Shield, AlertTriangl
 import { Asset } from '../../types/asset';
 import { Report } from '../../types/organization';
 import { reportingService } from '../../services/reportingService';
-import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import toast from 'react-hot-toast';
 

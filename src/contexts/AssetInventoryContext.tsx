@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Asset, AssetFilters, AssetInventoryState, SortConfig } from '../types/asset';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { Asset, AssetFilters, AssetInventoryState, SortConfig, AssetStats } from '../types/asset';
 import { filterAssets, sortAssets, calculateAssetStats } from '../utils/assetUtils';
 import { validateSearchQuery } from '../utils/validation';
 import { APP_CONFIG } from '../utils/constants';
@@ -25,7 +25,46 @@ const initialSortConfig: SortConfig = {
   direction: 'asc',
 };
 
+interface AssetInventoryContextType extends AssetInventoryState {
+  stats: AssetStats;
+  paginatedAssets: Asset[];
+  filterOptions: {
+    owners: string[];
+    locations: string[];
+    tags: string[];
+  };
+  totalPages: number;
+  updateFilters: (newFilters: Partial<AssetFilters>) => void;
+  updateSort: (key: keyof Asset) => void;
+  setCurrentPage: (page: number) => void;
+  setItemsPerPage: (itemsPerPage: number) => void;
+  selectAsset: (assetId: string) => void;
+  selectAllAssets: () => void;
+  showAssetDetail: (asset: Asset) => void;
+  hideAssetDetail: () => void;
+  showImportModal: () => void;
+  hideImportModal: () => void;
+  deleteAssets: (assetIds: string[]) => Promise<void>;
+  addAsset: (asset: Asset) => Promise<Asset>;
+  updateAsset: (assetId: string, updates: Partial<Asset>) => Promise<void>;
+  replaceAssets: (newAssets: Asset[]) => void;
+}
+
+const AssetInventoryContext = createContext<AssetInventoryContextType | undefined>(undefined);
+
 export const useAssetInventory = () => {
+  const context = useContext(AssetInventoryContext);
+  if (context === undefined) {
+    throw new Error('useAssetInventory must be used within an AssetInventoryProvider');
+  }
+  return context;
+};
+
+interface AssetInventoryProviderProps {
+  children: React.ReactNode;
+}
+
+export const AssetInventoryProvider: React.FC<AssetInventoryProviderProps> = ({ children }) => {
   const [state, setState] = useState<AssetInventoryState>({
     assets: [],
     filteredAssets: [],
@@ -41,7 +80,7 @@ export const useAssetInventory = () => {
     searchDebounce: 0,
   });
 
-  // Load assets on mount
+  // Load assets on mount - only once
   useEffect(() => {
     const loadAssets = async () => {
       setState(prev => ({ ...prev, loading: true }));
@@ -49,7 +88,7 @@ export const useAssetInventory = () => {
         const assets = await assetService.getAssets();
         setState(prev => ({ ...prev, assets, loading: false }));
       } catch (error) {
-        logError(error, 'useAssetInventory.loadAssets');
+        logError(error, 'AssetInventoryProvider.loadAssets');
         setState(prev => ({ ...prev, assets: sampleAssets, loading: false }));
         toast('Using demo data - Database connection unavailable', {
           icon: 'ℹ️',
@@ -59,7 +98,7 @@ export const useAssetInventory = () => {
     };
 
     loadAssets();
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
 
   // Debounced search effect with validation
   useEffect(() => {
@@ -67,7 +106,7 @@ export const useAssetInventory = () => {
       try {
         // Validate search query for security
         if (state.filters.search && !validateSearchQuery(state.filters.search)) {
-          logError(new Error('Invalid search query'), 'useAssetInventory.searchValidation');
+          logError(new Error('Invalid search query'), 'AssetInventoryProvider.searchValidation');
           return;
         }
 
@@ -83,7 +122,7 @@ export const useAssetInventory = () => {
           loading: false,
         }));
       } catch (error) {
-        logError(error, 'useAssetInventory.filterAssets');
+        logError(error, 'AssetInventoryProvider.filterAssets');
         setState(prev => ({ ...prev, loading: false }));
       }
     }, APP_CONFIG.SEARCH.DEBOUNCE_DELAY);
@@ -96,7 +135,7 @@ export const useAssetInventory = () => {
     try {
       return calculateAssetStats(state.assets);
     } catch (error) {
-      logError(error, 'useAssetInventory.calculateStats');
+      logError(error, 'AssetInventoryProvider.calculateStats');
       return {
         total: 0,
         critical: 0,
@@ -141,10 +180,12 @@ export const useAssetInventory = () => {
   }, []);
 
   const setCurrentPage = useCallback((page: number) => {
-    const totalPages = Math.ceil(state.filteredAssets.length / state.itemsPerPage);
-    const validPage = Math.max(1, Math.min(page, totalPages));
-    setState(prev => ({ ...prev, currentPage: validPage }));
-  }, [state.filteredAssets.length, state.itemsPerPage]);
+    setState(prev => {
+      const totalPages = Math.ceil(prev.filteredAssets.length / prev.itemsPerPage);
+      const validPage = Math.max(1, Math.min(page, totalPages));
+      return { ...prev, currentPage: validPage };
+    });
+  }, []);
 
   const setItemsPerPage = useCallback((itemsPerPage: number) => {
     const validItemsPerPage = Math.min(itemsPerPage, APP_CONFIG.PAGINATION.MAX_PAGE_SIZE);
@@ -161,13 +202,19 @@ export const useAssetInventory = () => {
   }, []);
 
   const selectAllAssets = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      selectedAssets: prev.selectedAssets.length === paginatedAssets.length 
-        ? [] 
-        : paginatedAssets.map(asset => asset.id),
-    }));
-  }, [paginatedAssets]);
+    setState(prev => {
+      const startIndex = (prev.currentPage - 1) * prev.itemsPerPage;
+      const endIndex = startIndex + prev.itemsPerPage;
+      const paginated = prev.filteredAssets.slice(startIndex, endIndex);
+      
+      return {
+        ...prev,
+        selectedAssets: prev.selectedAssets.length === paginated.length 
+          ? [] 
+          : paginated.map(asset => asset.id),
+      };
+    });
+  }, []);
 
   const showAssetDetail = useCallback((asset: Asset) => {
     setState(prev => ({
@@ -208,7 +255,7 @@ export const useAssetInventory = () => {
       
       toast.success(`${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} deleted successfully`);
     } catch (error) {
-      logError(error, 'useAssetInventory.deleteAssets');
+      logError(error, 'AssetInventoryProvider.deleteAssets');
       toast.error('Failed to delete assets');
       throw error;
     }
@@ -226,7 +273,7 @@ export const useAssetInventory = () => {
       toast.success('Asset created successfully');
       return newAsset;
     } catch (error) {
-      logError(error, 'useAssetInventory.addAsset');
+      logError(error, 'AssetInventoryProvider.addAsset');
       toast.error('Failed to create asset');
       throw error;
     }
@@ -255,7 +302,7 @@ export const useAssetInventory = () => {
       
       toast.success('Asset updated successfully');
     } catch (error) {
-      logError(error, 'useAssetInventory.updateAsset');
+      logError(error, 'AssetInventoryProvider.updateAsset');
       toast.error('Failed to update asset');
       throw error;
     }
@@ -272,17 +319,19 @@ export const useAssetInventory = () => {
         currentPage: 1,
       }));
     } catch (error) {
-      logError(error, 'useAssetInventory.replaceAssets');
+      logError(error, 'AssetInventoryProvider.replaceAssets');
       throw error;
     }
   }, []);
 
-  return {
+  const totalPages = Math.ceil(state.filteredAssets.length / state.itemsPerPage);
+
+  const value = {
     ...state,
     stats,
     paginatedAssets,
     filterOptions,
-    totalPages: Math.ceil(state.filteredAssets.length / state.itemsPerPage),
+    totalPages,
     updateFilters,
     updateSort,
     setCurrentPage,
@@ -298,4 +347,10 @@ export const useAssetInventory = () => {
     updateAsset,
     replaceAssets,
   };
+
+  return (
+    <AssetInventoryContext.Provider value={value}>
+      {children}
+    </AssetInventoryContext.Provider>
+  );
 };

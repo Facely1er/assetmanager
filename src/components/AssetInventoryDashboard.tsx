@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
-import { useAssetInventory } from '../hooks/useAssetInventory';
+import { useAssetInventory } from '../contexts/AssetInventoryContext';
 import { AssetInventoryHeader } from './AssetInventoryHeader';
 import { AssetStatsOverview } from './AssetStatsOverview';
 import { AssetFiltersPanel } from './AssetFiltersPanel';

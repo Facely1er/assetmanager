@@ -23,7 +23,7 @@ import {
   Unlock
 } from 'lucide-react';
 import { Asset, AssetDependency, AssetRelationship } from '../../types/asset';
-import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { exportToCSV } from '../../utils/assetUtils';
 import toast from 'react-hot-toast';
 

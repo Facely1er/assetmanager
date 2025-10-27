@@ -26,7 +26,7 @@ import { EnrichmentData } from '../services/dataEnrichmentService';
 import { AnalyticsInsights } from '../services/analyticsService';
 import { dataEnrichmentService } from '../services/dataEnrichmentService';
 import { analyticsService } from '../services/analyticsService';
-import { useAssetInventory } from '../hooks/useAssetInventory';
+import { useAssetInventory } from '../contexts/AssetInventoryContext';
 import { 
   BarChart, 
   Bar, 
