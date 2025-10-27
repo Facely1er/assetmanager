@@ -3,8 +3,23 @@ import { BarChart3, Download, Calendar, Filter, TrendingUp, Shield, AlertTriangl
 import { Asset } from '../../types/asset';
 import { Report } from '../../types/organization';
 import { reportingService } from '../../services/reportingService';
-import { useAssetInventory } from '../../contexts/AssetInventoryContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
+import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { LoadingSpinner } from '../LoadingSpinner';
+import { 
+  BarChartWrapper as BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  PieChartWrapper as RechartsPieChart, 
+  Cell, 
+  LineChartWrapper as LineChart, 
+  Line, 
+  AreaChartWrapper as AreaChart, 
+  Area 
+} from '../ChartsWrapper';
 import toast from 'react-hot-toast';
 
 export const AdvancedReportingDashboard: React.FC = () => {
