@@ -176,7 +176,6 @@ export const reportingService = {
         average: Math.round(assets.reduce((sum, a) => sum + a.riskScore, 0) / assets.length),
       };
 
-      const { default: jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       let yPosition = 20;
 
