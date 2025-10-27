@@ -2,6 +2,9 @@ import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabas
 import { Report } from '../types/organization';
 import { Asset } from '../types/asset';
 
+// Dynamic imports for heavy libraries - only loaded when needed
+// This significantly reduces initial bundle size
+
 export const reportingService = {
   // Get saved reports
   async getReports(): Promise<Report[]> {
@@ -112,7 +115,9 @@ export const reportingService = {
   // Generate compliance report
   async generateComplianceReport(assets: Asset[], framework: string): Promise<void> {
     try {
-      const { default: jsPDF } = await import('jspdf');
+      // Dynamically import jsPDF only when needed
+      const jsPDF = (await import('jspdf')).default;
+      
       const complianceAssets = assets.filter(asset => 
         asset.complianceFrameworks.includes(framework)
       );
@@ -160,6 +165,9 @@ export const reportingService = {
   // Generate risk assessment report
   async generateRiskAssessmentReport(assets: Asset[]): Promise<void> {
     try {
+      // Dynamically import jsPDF only when needed
+      const jsPDF = (await import('jspdf')).default;
+      
       const riskStats = {
         critical: assets.filter(a => a.riskScore >= 80).length,
         high: assets.filter(a => a.riskScore >= 60 && a.riskScore < 80).length,
@@ -168,7 +176,6 @@ export const reportingService = {
         average: Math.round(assets.reduce((sum, a) => sum + a.riskScore, 0) / assets.length),
       };
 
-      const { default: jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       let yPosition = 20;
 
@@ -232,7 +239,8 @@ export const reportingService = {
   },
 
   async generatePDFReport(assets: Asset[], stats: Record<string, unknown>): Promise<void> {
-    const { default: jsPDF } = await import('jspdf');
+    // Dynamically import jsPDF only when needed
+    const jsPDF = (await import('jspdf')).default;
     const doc = new jsPDF();
     let yPosition = 20;
 
@@ -270,6 +278,7 @@ export const reportingService = {
   },
 
   async generateExcelReport(assets: Asset[], stats: Record<string, unknown>): Promise<void> {
+    // Dynamically import xlsx only when needed
     const XLSX = await import('xlsx');
     const workbook = XLSX.utils.book_new();
 
