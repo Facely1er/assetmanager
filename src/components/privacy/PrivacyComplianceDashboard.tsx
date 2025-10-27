@@ -21,7 +21,7 @@ import {
   Activity
 } from 'lucide-react';
 import { Asset, PrivacyRegulation, DataSubjectRight, ComplianceRequirement } from '../../types/asset';
-import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { exportToCSV } from '../../utils/assetUtils';
 import toast from 'react-hot-toast';
 

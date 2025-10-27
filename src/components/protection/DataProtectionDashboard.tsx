@@ -24,7 +24,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { Asset } from '../../types/asset';
-import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { exportToCSV } from '../../utils/assetUtils';
 import toast from 'react-hot-toast';
 

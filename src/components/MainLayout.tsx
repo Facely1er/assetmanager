@@ -3,7 +3,7 @@ import { NavigationSidebar } from './NavigationSidebar';
 import { DashboardHome } from './DashboardHome';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
-import { useAssetInventory } from '../hooks/useAssetInventory';
+import { useAssetInventory } from '../contexts/AssetInventoryContext';
 
 // Lazy load components for better performance
 const AssetInventoryDashboard = lazy(() => import('./AssetInventoryDashboard'));

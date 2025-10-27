@@ -6,7 +6,7 @@ import {
   IntegrationResult 
 } from '../../services/externalDataIntegrationService';
 import { Asset } from '../../types/asset';
-import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 
 interface ExternalDataIntegrationManagerProps {
   onClose: () => void;

@@ -6,7 +6,7 @@ import {
   GeneratedReport 
 } from '../../services/automatedReportingService';
 import { Asset } from '../../types/asset';
-import { useAssetInventory } from '../../hooks/useAssetInventory';
+import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { dataEnrichmentService } from '../../services/dataEnrichmentService';
 import { analyticsService } from '../../services/analyticsService';
 
