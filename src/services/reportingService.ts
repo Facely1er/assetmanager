@@ -1,8 +1,6 @@
 import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabase';
 import { Report } from '../types/organization';
 import { Asset } from '../types/asset';
-import jsPDF from 'jspdf';
-import * as XLSX from 'xlsx';
 
 export const reportingService = {
   // Get saved reports
@@ -114,6 +112,7 @@ export const reportingService = {
   // Generate compliance report
   async generateComplianceReport(assets: Asset[], framework: string): Promise<void> {
     try {
+      const { default: jsPDF } = await import('jspdf');
       const complianceAssets = assets.filter(asset => 
         asset.complianceFrameworks.includes(framework)
       );
@@ -169,6 +168,7 @@ export const reportingService = {
         average: Math.round(assets.reduce((sum, a) => sum + a.riskScore, 0) / assets.length),
       };
 
+      const { default: jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       let yPosition = 20;
 
@@ -232,6 +232,7 @@ export const reportingService = {
   },
 
   async generatePDFReport(assets: Asset[], stats: Record<string, unknown>): Promise<void> {
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     let yPosition = 20;
 
@@ -269,6 +270,7 @@ export const reportingService = {
   },
 
   async generateExcelReport(assets: Asset[], stats: Record<string, unknown>): Promise<void> {
+    const XLSX = await import('xlsx');
     const workbook = XLSX.utils.book_new();
 
     // Summary sheet

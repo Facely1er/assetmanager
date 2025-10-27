@@ -1,28 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useAssetInventory } from '../hooks/useAssetInventory';
 import { AssetInventoryHeader } from './AssetInventoryHeader';
 import { AssetStatsOverview } from './AssetStatsOverview';
 import { AssetFiltersPanel } from './AssetFiltersPanel';
 import { AssetDataTable } from './AssetDataTable';
-import { AssetDetailModal } from './AssetDetailModal';
-import { AssetFormModal } from './AssetFormModal';
-import { AssetImportModal } from './AssetImportModal';
 import { AssetTablePagination } from './AssetTablePagination';
-import { InventoryGenerator } from './InventoryGenerator';
-import { BulkEditModal } from './BulkEditModal';
-import { AdvancedFiltersModal } from './AdvancedFiltersModal';
-import { AssetRelationshipModal } from './AssetRelationshipModal';
-import { VulnerabilityManagementModal } from './VulnerabilityManagementModal';
 import { ErrorBoundary } from './ErrorBoundary';
-import { InsightsDashboard } from './InsightsDashboard';
-import { AdvancedDataVisualization } from './AdvancedDataVisualization';
-import { AutomatedReportingManager } from './reports/AutomatedReportingManager';
-import { ExternalDataIntegrationManager } from './integrations/ExternalDataIntegrationManager';
+import { LoadingSpinner } from './LoadingSpinner';
 import { exportToCSV } from '../utils/assetUtils';
 import { handleApiError, logError } from '../utils/errorHandling';
 import { SUCCESS_MESSAGES } from '../utils/constants';
 import { Asset } from '../types/asset';
+
+// Lazy load heavy components
+const AssetDetailModal = lazy(() => import('./AssetDetailModal').then(m => ({ default: m.AssetDetailModal })));
+const AssetFormModal = lazy(() => import('./AssetFormModal').then(m => ({ default: m.AssetFormModal })));
+const AssetImportModal = lazy(() => import('./AssetImportModal').then(m => ({ default: m.AssetImportModal })));
+const InventoryGenerator = lazy(() => import('./InventoryGenerator').then(m => ({ default: m.InventoryGenerator })));
+const BulkEditModal = lazy(() => import('./BulkEditModal').then(m => ({ default: m.BulkEditModal })));
+const AdvancedFiltersModal = lazy(() => import('./AdvancedFiltersModal').then(m => ({ default: m.AdvancedFiltersModal })));
+const AssetRelationshipModal = lazy(() => import('./AssetRelationshipModal').then(m => ({ default: m.AssetRelationshipModal })));
+const VulnerabilityManagementModal = lazy(() => import('./VulnerabilityManagementModal').then(m => ({ default: m.VulnerabilityManagementModal })));
+const InsightsDashboard = lazy(() => import('./InsightsDashboard').then(m => ({ default: m.InsightsDashboard })));
+const AdvancedDataVisualization = lazy(() => import('./AdvancedDataVisualization').then(m => ({ default: m.AdvancedDataVisualization })));
+const AutomatedReportingManager = lazy(() => import('./reports/AutomatedReportingManager').then(m => ({ default: m.AutomatedReportingManager })));
+const ExternalDataIntegrationManager = lazy(() => import('./integrations/ExternalDataIntegrationManager').then(m => ({ default: m.ExternalDataIntegrationManager })));
 
 export const AssetInventoryDashboard: React.FC = () => {
   const {
@@ -373,93 +376,117 @@ export const AssetInventoryDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Modals */}
-        <AssetDetailModal
-          asset={selectedAsset}
-          isOpen={showDetailModal}
-          onClose={hideAssetDetail}
-        />
+        {/* Modals - Lazy loaded with Suspense */}
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <AssetDetailModal
+            asset={selectedAsset}
+            isOpen={showDetailModal}
+            onClose={hideAssetDetail}
+          />
+        </Suspense>
 
-        <AssetFormModal
-          asset={editingAsset}
-          isOpen={showAssetForm}
-          onClose={() => {
-            setShowAssetForm(false);
-            setEditingAsset(null);
-          }}
-          onSave={handleSaveAsset}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <AssetFormModal
+            asset={editingAsset}
+            isOpen={showAssetForm}
+            onClose={() => {
+              setShowAssetForm(false);
+              setEditingAsset(null);
+            }}
+            onSave={handleSaveAsset}
+          />
+        </Suspense>
 
-        <AssetImportModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImportAssets}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <AssetImportModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onImport={handleImportAssets}
+          />
+        </Suspense>
 
-        <InventoryGenerator
-          isOpen={showInventoryGenerator}
-          onClose={() => setShowInventoryGenerator(false)}
-          onInventoryGenerated={handleInventoryGenerated}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <InventoryGenerator
+            isOpen={showInventoryGenerator}
+            onClose={() => setShowInventoryGenerator(false)}
+            onInventoryGenerated={handleInventoryGenerated}
+          />
+        </Suspense>
 
-        <BulkEditModal
-          isOpen={showBulkEditModal}
-          onClose={() => setShowBulkEditModal(false)}
-          selectedAssets={assets.filter(a => selectedAssets.includes(a.id))}
-          onSave={handleBulkEditSave}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <BulkEditModal
+            isOpen={showBulkEditModal}
+            onClose={() => setShowBulkEditModal(false)}
+            selectedAssets={assets.filter(a => selectedAssets.includes(a.id))}
+            onSave={handleBulkEditSave}
+          />
+        </Suspense>
 
-        <AdvancedFiltersModal
-          isOpen={showAdvancedFilters}
-          onClose={() => setShowAdvancedFilters(false)}
-          filters={filters}
-          onApplyFilters={updateFilters}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <AdvancedFiltersModal
+            isOpen={showAdvancedFilters}
+            onClose={() => setShowAdvancedFilters(false)}
+            filters={filters}
+            onApplyFilters={updateFilters}
+          />
+        </Suspense>
 
         {relationshipAsset && (
-          <AssetRelationshipModal
-            isOpen={showRelationshipModal}
-            onClose={() => {
-              setShowRelationshipModal(false);
-              setRelationshipAsset(null);
-            }}
-            asset={relationshipAsset}
-            allAssets={assets}
-            onSave={handleSaveRelationships}
-          />
+          <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+            <AssetRelationshipModal
+              isOpen={showRelationshipModal}
+              onClose={() => {
+                setShowRelationshipModal(false);
+                setRelationshipAsset(null);
+              }}
+              asset={relationshipAsset}
+              allAssets={assets}
+              onSave={handleSaveRelationships}
+            />
+          </Suspense>
         )}
 
         {vulnerabilityAsset && (
-          <VulnerabilityManagementModal
-            isOpen={showVulnerabilityModal}
-            onClose={() => {
-              setShowVulnerabilityModal(false);
-              setVulnerabilityAsset(null);
-            }}
-            asset={vulnerabilityAsset}
-            onSave={handleSaveVulnerabilities}
-          />
+          <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+            <VulnerabilityManagementModal
+              isOpen={showVulnerabilityModal}
+              onClose={() => {
+                setShowVulnerabilityModal(false);
+                setVulnerabilityAsset(null);
+              }}
+              asset={vulnerabilityAsset}
+              onSave={handleSaveVulnerabilities}
+            />
+          </Suspense>
         )}
 
-        <InsightsDashboard
-          isOpen={showInsightsDashboard}
-          onClose={() => setShowInsightsDashboard(false)}
-          assets={assets}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <InsightsDashboard
+            isOpen={showInsightsDashboard}
+            onClose={() => setShowInsightsDashboard(false)}
+            assets={assets}
+          />
+        </Suspense>
 
-        <AdvancedDataVisualization
-          isOpen={showAdvancedVisualization}
-          onClose={() => setShowAdvancedVisualization(false)}
-          assets={assets}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <AdvancedDataVisualization
+            isOpen={showAdvancedVisualization}
+            onClose={() => setShowAdvancedVisualization(false)}
+            assets={assets}
+          />
+        </Suspense>
 
-        <AutomatedReportingManager
-          onClose={() => setShowAutomatedReporting(false)}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <AutomatedReportingManager
+            onClose={() => setShowAutomatedReporting(false)}
+          />
+        </Suspense>
 
-        <ExternalDataIntegrationManager
-          onClose={() => setShowExternalIntegration(false)}
-        />
+        <Suspense fallback={<LoadingSpinner size="sm" text="Loading..." />}>
+          <ExternalDataIntegrationManager
+            onClose={() => setShowExternalIntegration(false)}
+          />
+        </Suspense>
 
         {/* Overlay for filters panel */}
         {isFiltersPanelOpen && (

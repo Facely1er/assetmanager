@@ -22,9 +22,17 @@ export default defineConfig({
       '@supabase/supabase-js',
       'react-hot-toast',
       'date-fns',
-      'recharts',
       'lucide-react'
     ],
+    exclude: [
+      // Exclude large libraries from pre-bundling to enable better tree shaking
+      'xlsx',
+      'jspdf', 
+      'html2canvas',
+      'recharts'
+    ],
+    // Force optimization of specific modules
+    force: true
   },
   esbuild: {
     // Remove console.log in production
@@ -40,19 +48,85 @@ export default defineConfig({
         drop_console: process.env.NODE_ENV === 'production',
         drop_debugger: true,
         pure_funcs: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info'] : [],
+        // Additional compression options
+        passes: 2,
+        unsafe: true,
+        unsafe_comps: true,
+        unsafe_math: true,
+        unsafe_proto: true,
+        unsafe_regexp: true,
+        unsafe_undefined: true,
       },
+      mangle: {
+        // Mangle property names for better compression
+        properties: {
+          regex: /^_/
+        }
+      }
     },
     // Enhanced bundle optimization
     rollupOptions: {
       output: {
         // Optimized chunk splitting strategy
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'supabase': ['@supabase/supabase-js'],
-          'utilities': ['date-fns', 'react-hot-toast'],
-          'ui': ['lucide-react'],
-          'charts': ['recharts'],
-          'office': ['xlsx', 'jspdf', 'html2canvas'],
+        manualChunks: (id) => {
+          // Core React libraries
+          if (id.includes('react') || id.includes('react-dom')) {
+            return 'react-vendor';
+          }
+          
+          // Supabase
+          if (id.includes('@supabase')) {
+            return 'supabase';
+          }
+          
+          // UI libraries
+          if (id.includes('lucide-react')) {
+            return 'ui-icons';
+          }
+          
+          // Chart libraries - split into smaller chunks
+          if (id.includes('recharts')) {
+            return 'charts';
+          }
+          
+          // Office/PDF libraries - split further
+          if (id.includes('xlsx')) {
+            return 'office-xlsx';
+          }
+          if (id.includes('jspdf')) {
+            return 'office-pdf';
+          }
+          if (id.includes('html2canvas')) {
+            return 'office-canvas';
+          }
+          
+          // Utility libraries
+          if (id.includes('date-fns') || id.includes('react-hot-toast')) {
+            return 'utilities';
+          }
+          
+          // Large components - split by feature
+          if (id.includes('AssetInventoryDashboard')) {
+            return 'feature-assets';
+          }
+          if (id.includes('AdvancedReportingDashboard') || id.includes('InsightsDashboard')) {
+            return 'feature-reports';
+          }
+          if (id.includes('ComplianceManagement') || id.includes('PrivacyComplianceDashboard')) {
+            return 'feature-compliance';
+          }
+          if (id.includes('VulnerabilityDashboard') || id.includes('DependenciesMappingDashboard')) {
+            return 'feature-security';
+          }
+          
+          // Node modules
+          if (id.includes('node_modules')) {
+            // Group smaller libraries together
+            if (id.includes('lodash') || id.includes('ramda')) {
+              return 'vendor-utils';
+            }
+            return 'vendor';
+          }
         },
         // Optimize asset filenames
         assetFileNames: (assetInfo) => {
@@ -65,13 +139,23 @@ export default defineConfig({
             return `fonts/[name]-[hash][extname]`;
           }
           return `assets/[name]-[hash][extname]`;
-        }
+        },
+        // Optimize chunk file names
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `js/[name]-[hash].js`;
+        },
+        // Optimize entry file names
+        entryFileNames: 'js/[name]-[hash].js'
       }
     },
     // Reduce chunk size warning limit for better performance
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1000,
     // Target modern browsers for smaller bundle
     target: 'esnext',
+    // Additional build optimizations
+    cssCodeSplit: true,
+    reportCompressedSize: true,
   },
   // Enhanced development server configuration
   server: {
