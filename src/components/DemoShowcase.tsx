@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Play, 
-  Clock, 
-  Users, 
-  Shield, 
-  Building2, 
-  Zap, 
+import {
+  Play,
+  Clock,
+  Users,
+  Shield,
+  Building2,
+  Zap,
   ChevronRight,
   CheckCircle,
-  Star,
-  Award,
   Target,
-  BarChart3,
-  FileText,
-  AlertTriangle
+  FileText
 } from 'lucide-react';
-import { DEMO_SCENARIOS, getDemoScenario } from '../data/demoScenarios';
+import { DEMO_SCENARIOS } from '../data/demoScenarios';
 import { getQuickStartScenarios, getIndustryScenarios } from '../data/demoDataGenerator';
 
 interface DemoShowcaseProps {
