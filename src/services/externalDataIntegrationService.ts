@@ -500,11 +500,13 @@ class ExternalDataIntegrationService {
 
   private async syncVulnerabilityData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the NVD API
-    console.log(`Syncing vulnerability data from ${source.name}`);
-    
+    if (import.meta.env.DEV) {
+      console.log(`Syncing vulnerability data from ${source.name}`);
+    }
+
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Mock vulnerability data
     const mockVulnerabilities: VulnerabilityData[] = [
       {
@@ -524,15 +526,19 @@ class ExternalDataIntegrationService {
     ];
 
     // Store vulnerabilities (in real implementation, this would be stored in database)
-    console.log(`Synced ${mockVulnerabilities.length} vulnerabilities`);
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${mockVulnerabilities.length} vulnerabilities`);
+    }
   }
 
   private async syncThreatIntelligenceData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the MITRE ATT&CK API
-    console.log(`Syncing threat intelligence data from ${source.name}`);
-    
+    if (import.meta.env.DEV) {
+      console.log(`Syncing threat intelligence data from ${source.name}`);
+    }
+
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     const mockThreats: ThreatIntelligenceData[] = [
       {
         threatId: 'T1055',
@@ -555,15 +561,19 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    console.log(`Synced ${mockThreats.length} threat intelligence entries`);
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${mockThreats.length} threat intelligence entries`);
+    }
   }
 
   private async syncComplianceData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the CIS Controls API
-    console.log(`Syncing compliance data from ${source.name}`);
-    
+    if (import.meta.env.DEV) {
+      console.log(`Syncing compliance data from ${source.name}`);
+    }
+
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     const mockCompliance: ComplianceData[] = [
       {
         frameworkId: 'cis_controls_v8',
@@ -582,15 +592,19 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    console.log(`Synced ${mockCompliance.length} compliance controls`);
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${mockCompliance.length} compliance controls`);
+    }
   }
 
   private async syncAssetDiscoveryData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the Nmap scanner API
-    console.log(`Syncing asset discovery data from ${source.name}`);
-    
+    if (import.meta.env.DEV) {
+      console.log(`Syncing asset discovery data from ${source.name}`);
+    }
+
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     const mockAssets: AssetDiscoveryData[] = [
       {
         assetId: 'discovered-001',
@@ -613,15 +627,19 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    console.log(`Synced ${mockAssets.length} discovered assets`);
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${mockAssets.length} discovered assets`);
+    }
   }
 
   private async syncCostAnalysisData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the AWS Cost Explorer API
-    console.log(`Syncing cost analysis data from ${source.name}`);
-    
+    if (import.meta.env.DEV) {
+      console.log(`Syncing cost analysis data from ${source.name}`);
+    }
+
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     const mockCosts: CostAnalysisData[] = [
       {
         assetId: 'aws-ec2-001',
@@ -638,15 +656,19 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    console.log(`Synced ${mockCosts.length} cost records`);
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${mockCosts.length} cost records`);
+    }
   }
 
   private async syncPerformanceMonitoringData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the Prometheus API
-    console.log(`Syncing performance monitoring data from ${source.name}`);
-    
+    if (import.meta.env.DEV) {
+      console.log(`Syncing performance monitoring data from ${source.name}`);
+    }
+
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const mockMetrics: PerformanceMonitoringData[] = [
       {
         assetId: 'server-001',
@@ -664,7 +686,9 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    console.log(`Synced ${mockMetrics.length} performance metrics`);
+    if (import.meta.env.DEV) {
+      console.log(`Synced ${mockMetrics.length} performance metrics`);
+    }
   }
 
   private async getDataCount(type: string): Promise<number> {
@@ -854,7 +878,9 @@ class ExternalDataIntegrationService {
 
   private async applyTransformation(asset: Asset, enriched: EnrichmentData, rule: EnrichmentRule): Promise<void> {
     // Mock implementation - in real scenario, this would apply the actual transformation
-    console.log(`Applying transformation rule: ${rule.name} to asset: ${asset.id}`);
+    if (import.meta.env.DEV) {
+      console.log(`Applying transformation rule: ${rule.name} to asset: ${asset.id}`);
+    }
   }
 
   async addEnrichmentRule(rule: Omit<EnrichmentRule, 'id' | 'createdAt' | 'updatedAt'>): Promise<EnrichmentRule> {
