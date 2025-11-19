@@ -32,6 +32,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   PieChart as RechartsPieChart,
+  Pie,
   Cell,
   LineChart,
   Line,
@@ -324,11 +325,11 @@ export const InsightsDashboard: React.FC<InsightsDashboardProps> = ({
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Risk Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
-                <RechartsPieChart data={chartData.riskDistribution}>
-                  {chartData.riskDistribution.map((entry, index) => (
+                <Pie data={chartData.riskDistribution} dataKey="value" nameKey="level" cx="50%" cy="50%" outerRadius={100}>
+                  {chartData.riskDistribution.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </RechartsPieChart>
+                </Pie>
                 <Tooltip formatter={(value, name) => [`${value} assets`, name]} />
               </RechartsPieChart>
             </ResponsiveContainer>
