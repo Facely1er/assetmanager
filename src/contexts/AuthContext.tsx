@@ -47,26 +47,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const isConnected = await checkSupabaseConnectivity();
         
         if (!isConnected) {
-          console.log('Supabase connectivity failed, running in demo mode');
+          if (import.meta.env.DEV) {
+            console.log('Supabase connectivity failed, running in demo mode');
+          }
           setLoading(false);
           return;
         }
-        
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           // Check if it's a network error
           if (error.message.includes('fetch') || error.message.includes('network')) {
-            console.warn('Network error getting session, running in demo mode:', error);
+            if (import.meta.env.DEV) {
+              console.warn('Network error getting session, running in demo mode:', error);
+            }
             setLoading(false);
             return;
           }
-          console.error('Error getting session:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error getting session:', error);
+          }
         } else {
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
-        console.warn('Supabase connection failed, running in demo mode:', error);
+        if (import.meta.env.DEV) {
+          console.warn('Supabase connection failed, running in demo mode:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -78,19 +86,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          console.log('Auth state changed:', event, session?.user?.email);
-          
+          if (import.meta.env.DEV) {
+            console.log('Auth state changed:', event, session?.user?.email);
+          }
+
           setSession(session);
           setUser(session?.user ?? null);
-          
+
           if (event === 'SIGNED_IN') {
             toast.success('Successfully signed in!');
           } else if (event === 'SIGNED_OUT') {
             toast.success('Successfully signed out!');
           } else if (event === 'TOKEN_REFRESHED') {
-            console.log('Token refreshed');
+            if (import.meta.env.DEV) {
+              console.log('Token refreshed');
+            }
           }
-          
+
           setLoading(false);
         }
       );
@@ -99,7 +111,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         subscription.unsubscribe();
       };
     } catch (error) {
-      console.warn('Failed to set up auth state listener, running in demo mode:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Failed to set up auth state listener, running in demo mode:', error);
+      }
       return () => {}; // Return empty cleanup function
     }
   }, []);

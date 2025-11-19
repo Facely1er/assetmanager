@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Eye, EyeOff, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -14,8 +15,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,10 +31,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       }
       onClose();
       resetForm();
-    } catch {
-      // Error handling is done in the auth context
+    } catch (error) {
+      // Additional error feedback - auth context also shows toasts
+      const message = error instanceof Error ? error.message : 'Authentication failed';
+      if (!message.includes('toast')) {
+        // Only show if not already handled by context
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error('Please enter your email address first');
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      await resetPassword(email);
+    } catch {
+      // Error is already handled in AuthContext
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -189,13 +212,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           {!isSignUp && (
             <div className="mt-4 text-center">
               <button
-                onClick={() => {
-                  // TODO: Implement forgot password
-                  console.log('Forgot password clicked');
-                }}
-                className="text-sm text-gray-600 hover:text-gray-800"
+                onClick={handleForgotPassword}
+                disabled={isResettingPassword}
+                className="text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50"
               >
-                Forgot your password?
+                {isResettingPassword ? 'Sending reset email...' : 'Forgot your password?'}
               </button>
             </div>
           )}

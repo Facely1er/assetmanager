@@ -1,5 +1,6 @@
 // Offline functionality and data synchronization
-import { useState, useEffect } from 'react';
+import React from 'react';
+import { logError } from './errorHandling';
 
 interface OfflineOperation {
   id: string;
@@ -15,28 +16,44 @@ class OfflineManager {
   private isOnline: boolean = navigator.onLine;
   private syncInProgress: boolean = false;
   private maxRetries: number = 3;
+  private syncInterval: ReturnType<typeof setInterval> | null = null;
+  private onlineListener: () => void;
+  private offlineListener: () => void;
 
   constructor() {
+    // Bind event listeners to preserve reference for cleanup
+    this.onlineListener = () => {
+      this.isOnline = true;
+      this.syncOfflineOperations();
+    };
+    this.offlineListener = () => {
+      this.isOnline = false;
+    };
+
     this.loadOfflineOperations();
     this.setupEventListeners();
   }
 
   private setupEventListeners() {
-    window.addEventListener('online', () => {
-      this.isOnline = true;
-      this.syncOfflineOperations();
-    });
-
-    window.addEventListener('offline', () => {
-      this.isOnline = false;
-    });
+    window.addEventListener('online', this.onlineListener);
+    window.addEventListener('offline', this.offlineListener);
 
     // Periodic sync attempt
-    setInterval(() => {
+    this.syncInterval = setInterval(() => {
       if (this.isOnline && this.operations.length > 0 && !this.syncInProgress) {
         this.syncOfflineOperations();
       }
     }, 30000); // Every 30 seconds
+  }
+
+  // Cleanup method to prevent memory leaks
+  destroy() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+      this.syncInterval = null;
+    }
+    window.removeEventListener('online', this.onlineListener);
+    window.removeEventListener('offline', this.offlineListener);
   }
 
   // Queue operation for offline sync
@@ -66,22 +83,26 @@ class OfflineManager {
     if (this.syncInProgress || this.operations.length === 0) return;
 
     this.syncInProgress = true;
-    console.log(`Syncing ${this.operations.length} offline operations...`);
+    if (import.meta.env.DEV) {
+      console.log(`Syncing ${this.operations.length} offline operations...`);
+    }
 
     const failedOperations: OfflineOperation[] = [];
 
     for (const operation of this.operations) {
       try {
         await this.executeOperation(operation);
-        console.log(`Synced operation ${operation.id}`);
+        if (import.meta.env.DEV) {
+          console.log(`Synced operation ${operation.id}`);
+        }
       } catch (error) {
-        console.error(`Failed to sync operation ${operation.id}:`, error);
+        logError(error, 'OfflineManager.syncOfflineOperations', { operationId: operation.id });
         operation.retry_count++;
-        
+
         if (operation.retry_count < this.maxRetries) {
           failedOperations.push(operation);
         } else {
-          console.error(`Operation ${operation.id} exceeded max retries, discarding`);
+          logError(new Error(`Operation ${operation.id} exceeded max retries, discarding`), 'OfflineManager.syncOfflineOperations');
         }
       }
     }
@@ -90,10 +111,12 @@ class OfflineManager {
     this.saveOfflineOperations();
     this.syncInProgress = false;
 
-    if (failedOperations.length === 0) {
-      console.log('All offline operations synced successfully');
-    } else {
-      console.log(`${failedOperations.length} operations still pending retry`);
+    if (import.meta.env.DEV) {
+      if (failedOperations.length === 0) {
+        console.log('All offline operations synced successfully');
+      } else {
+        console.log(`${failedOperations.length} operations still pending retry`);
+      }
     }
   }
 
@@ -141,7 +164,7 @@ class OfflineManager {
         this.operations = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Failed to load offline operations:', error);
+      logError(error, 'OfflineManager.loadOfflineOperations');
       this.operations = [];
     }
   }
@@ -150,7 +173,7 @@ class OfflineManager {
     try {
       localStorage.setItem('ermits_offline_operations', JSON.stringify(this.operations));
     } catch (error) {
-      console.error('Failed to save offline operations:', error);
+      logError(error, 'OfflineManager.saveOfflineOperations');
     }
   }
 
@@ -188,7 +211,7 @@ class OfflineCache {
       
       await cache.put(key, response);
     } catch (error) {
-      console.error('Failed to cache data:', error);
+      logError(error, 'OfflineCache.cacheData', { key });
     }
   }
 
@@ -196,20 +219,20 @@ class OfflineCache {
     try {
       const cache = await caches.open(this.cacheName);
       const response = await cache.match(key);
-      
+
       if (!response) return null;
-      
+
       const cached = await response.json();
-      
+
       // Check expiry
       if (cached.expiry && Date.now() > cached.expiry) {
         await cache.delete(key);
         return null;
       }
-      
+
       return cached.data;
     } catch (error) {
-      console.error('Failed to get cached data:', error);
+      logError(error, 'OfflineCache.getCachedData', { key });
       return null;
     }
   }
@@ -218,7 +241,7 @@ class OfflineCache {
     try {
       await caches.delete(this.cacheName);
     } catch (error) {
-      console.error('Failed to clear cache:', error);
+      logError(error, 'OfflineCache.clearCache');
     }
   }
 
@@ -227,7 +250,7 @@ class OfflineCache {
       const cache = await caches.open(this.cacheName);
       const keys = await cache.keys();
       let totalSize = 0;
-      
+
       for (const request of keys) {
         const response = await cache.match(request);
         if (response) {
@@ -235,10 +258,10 @@ class OfflineCache {
           totalSize += blob.size;
         }
       }
-      
+
       return totalSize;
     } catch (error) {
-      console.error('Failed to calculate cache size:', error);
+      logError(error, 'OfflineCache.getCacheSize');
       return 0;
     }
   }

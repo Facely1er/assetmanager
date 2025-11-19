@@ -1,5 +1,7 @@
-import { supabase, handleSupabaseError } from '../lib/supabase';
+import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabase';
 import { Organization, OrganizationMember, Invitation, AuditLog } from '../types/organization';
+
+type InvitationRole = Invitation['role'];
 
 export const organizationService = {
   // Get user's organizations
@@ -115,7 +117,7 @@ export const organizationService = {
         id: `demo-invite-${Date.now()}`,
         organization_id: organizationId,
         email,
-        role: role as any,
+        role: role as InvitationRole,
         invited_by: 'demo-user',
         token: 'demo-token',
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

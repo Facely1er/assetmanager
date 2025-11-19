@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react';
 
+// Network Information API type definitions
+interface NetworkInformation extends EventTarget {
+  effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
+  saveData?: boolean;
+}
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: NetworkInformation;
+}
+
 export const useNetworkStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [connectionType, setConnectionType] = useState<string>('unknown');
@@ -12,16 +24,17 @@ export const useNetworkStatus = () => {
     window.addEventListener('offline', handleOffline);
 
     // Detect connection type if supported
-    if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
+    const nav = navigator as NavigatorWithConnection;
+    if (nav.connection) {
+      const connection = nav.connection;
       setConnectionType(connection.effectiveType || 'unknown');
-      
+
       const handleConnectionChange = () => {
         setConnectionType(connection.effectiveType || 'unknown');
       };
-      
+
       connection.addEventListener('change', handleConnectionChange);
-      
+
       return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);

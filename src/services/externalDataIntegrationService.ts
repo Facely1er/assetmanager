@@ -240,7 +240,7 @@ class ExternalDataIntegrationService {
         name: 'Nmap Network Scanner',
         type: 'asset_discovery',
         description: 'Network discovery and port scanning',
-        baseUrl: 'http://localhost:8080/api', // Local scanner service
+        baseUrl: import.meta.env.VITE_NMAP_SCANNER_URL || 'http://localhost:8080/api',
         isActive: false,
         syncFrequency: 'daily',
         config: {
@@ -284,7 +284,7 @@ class ExternalDataIntegrationService {
         name: 'Prometheus Monitoring',
         type: 'performance_monitoring',
         description: 'System and application performance metrics',
-        baseUrl: 'http://localhost:9090/api/v1',
+        baseUrl: import.meta.env.VITE_PROMETHEUS_URL || 'http://localhost:9090/api/v1',
         isActive: false,
         syncFrequency: 'realtime',
         config: {
