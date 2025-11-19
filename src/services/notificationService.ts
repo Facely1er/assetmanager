@@ -1,5 +1,6 @@
-import { supabase, handleSupabaseError } from '../lib/supabase';
+import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabase';
 import { Notification } from '../types/organization';
+import { logError } from '../utils/errorHandling';
 
 export const notificationService = {
   // Get user notifications
@@ -14,7 +15,7 @@ export const notificationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data || [];
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      logError(error, 'notificationService.getNotifications');
       throw error;
     }
   },
@@ -29,7 +30,7 @@ export const notificationService = {
 
       if (error) throw new Error(handleSupabaseError(error));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logError(error, 'notificationService.markAsRead');
       throw error;
     }
   },
@@ -44,7 +45,7 @@ export const notificationService = {
 
       if (error) throw new Error(handleSupabaseError(error));
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      logError(error, 'notificationService.markAllAsRead');
       throw error;
     }
   },
@@ -60,7 +61,7 @@ export const notificationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return count || 0;
     } catch (error) {
-      console.error('Error fetching unread count:', error);
+      logError(error, 'notificationService.getUnreadCount');
       return 0;
     }
   },
@@ -72,7 +73,7 @@ export const notificationService = {
     type: string;
     title: string;
     message: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
   }): Promise<Notification> {
     if (!isSupabaseEnabled || !supabase) {
       throw new Error('Notifications not available in demo mode');
@@ -88,7 +89,7 @@ export const notificationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data;
     } catch (error) {
-      console.error('Error creating notification:', error);
+      logError(error, 'notificationService.createNotification');
       throw error;
     }
   },
@@ -98,21 +99,21 @@ export const notificationService = {
     if (!isSupabaseEnabled || !supabase) {
       // Demo mode - return mock subscription
       return {
-        unsubscribe: () => console.log('Demo subscription unsubscribed')
+        unsubscribe: () => { /* Demo subscription cleanup */ }
       };
     }
 
     const user = supabase.auth.getUser();
-    
+
     return supabase
       .channel('notifications')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
+      .on('postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${user}`
-        }, 
+        },
         (payload) => callback(payload.new as Notification)
       )
       .subscribe();

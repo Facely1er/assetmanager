@@ -216,7 +216,7 @@ export const assetService = {
 
       return await mapRowToAsset(data);
     } catch (error) {
-      console.error('Error fetching asset:', error);
+      logError(error, 'assetService.getAsset');
       throw error;
     }
   },
@@ -261,7 +261,7 @@ export const assetService = {
 
       return await this.getAsset(newAsset.id) || newAsset;
     } catch (error) {
-      console.error('Error creating asset:', error);
+      logError(error, 'assetService.createAsset');
       throw error;
     }
   },
@@ -301,7 +301,7 @@ export const assetService = {
 
       return await this.getAsset(id) || await mapRowToAsset(data);
     } catch (error) {
-      console.error('Error updating asset:', error);
+      logError(error, 'assetService.updateAsset');
       throw error;
     }
   },
@@ -322,7 +322,7 @@ export const assetService = {
         throw new Error(handleSupabaseError(error));
       }
     } catch (error) {
-      console.error('Error deleting assets:', error);
+      logError(error, 'assetService.deleteAssets');
       throw error;
     }
   },
@@ -356,7 +356,7 @@ export const assetService = {
         }
       }
     } catch (error) {
-      console.error('Error updating asset relationships:', error);
+      logError(error, 'assetService.updateAssetRelationships');
       throw error;
     }
   },
@@ -393,7 +393,7 @@ export const assetService = {
         }
       }
     } catch (error) {
-      console.error('Error updating asset vulnerabilities:', error);
+      logError(error, 'assetService.updateAssetVulnerabilities');
       throw error;
     }
   },
@@ -427,7 +427,7 @@ export const assetService = {
 
       return assets;
     } catch (error) {
-      console.error('Error searching assets:', error);
+      logError(error, 'assetService.searchAssets');
       throw error;
     }
   },

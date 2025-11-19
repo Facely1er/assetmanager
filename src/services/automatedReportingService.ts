@@ -612,7 +612,9 @@ class AutomatedReportingService {
   private async executeScheduledReport(schedule: ReportSchedule) {
     // This would be called by the scheduler to execute a scheduled report
     // It would load the current asset data, enrich it, generate analytics, and create the report
-    console.log(`Executing scheduled report: ${schedule.name}`);
+    if (import.meta.env.DEV) {
+      console.log(`Executing scheduled report: ${schedule.name}`);
+    }
   }
 
   getReports(): GeneratedReport[] {
