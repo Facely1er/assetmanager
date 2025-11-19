@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  TrendingUp, 
-  AlertTriangle, 
-  DollarSign, 
-  Shield, 
-  BarChart3, 
-  PieChart, 
+import React, { useState, useEffect } from 'react';
+import {
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
+  Shield,
+  BarChart3,
   Activity,
   Target,
   Zap,
@@ -17,39 +16,31 @@ import {
   ChevronRight,
   ChevronDown,
   Info,
-  CheckCircle,
-  XCircle,
-  Clock
+  CheckCircle
 } from 'lucide-react';
 import { Asset } from '../types/asset';
 import { EnrichmentData } from '../services/dataEnrichmentService';
 import { AnalyticsInsights } from '../services/analyticsService';
 import { dataEnrichmentService } from '../services/dataEnrichmentService';
 import { analyticsService } from '../services/analyticsService';
-import { useAssetInventory } from '../contexts/AssetInventoryContext';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart as RechartsPieChart, 
-  Cell, 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area,
-  ScatterChart,
-  Scatter,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  AreaChart,
+  Area
 } from 'recharts';
 import toast from 'react-hot-toast';
+import { logError } from '../utils/errorHandling';
 
 interface InsightsDashboardProps {
   isOpen: boolean;
@@ -58,15 +49,14 @@ interface InsightsDashboardProps {
   className?: string;
 }
 
-export const InsightsDashboard: React.FC<InsightsDashboardProps> = ({ 
-  isOpen, 
-  onClose, 
-  assets: propAssets, 
-  className = '' 
+export const InsightsDashboard: React.FC<InsightsDashboardProps> = ({
+  isOpen,
+  onClose,
+  assets: propAssets,
+  className = ''
 }) => {
-  const { stats } = useAssetInventory();
   const assets = propAssets;
-  const [enrichmentData, setEnrichmentData] = useState<Map<string, EnrichmentData>>(new Map());
+  const [, setEnrichmentData] = useState<Map<string, EnrichmentData>>(new Map());
   const [analyticsInsights, setAnalyticsInsights] = useState<AnalyticsInsights | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
@@ -75,29 +65,30 @@ export const InsightsDashboard: React.FC<InsightsDashboardProps> = ({
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF7C7C'];
 
-  useEffect(() => {
-    loadInsights();
-  }, [assets]);
-
   const loadInsights = async () => {
     if (assets.length === 0) return;
-    
+
     setLoading(true);
     try {
       // Enrich asset data
       const enriched = await dataEnrichmentService.enrichAssets(assets);
       setEnrichmentData(enriched);
-      
+
       // Generate analytics insights
       const insights = await analyticsService.generateInsights(assets, enriched);
       setAnalyticsInsights(insights);
     } catch (error) {
       toast.error('Failed to load insights');
-      console.error('Error loading insights:', error);
+      logError(error, 'InsightsDashboard.loadInsights');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadInsights();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assets]);
 
   const refreshInsights = async () => {
     await loadInsights();
@@ -334,11 +325,11 @@ export const InsightsDashboard: React.FC<InsightsDashboardProps> = ({
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Risk Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
-                <RechartsPieChart data={chartData.riskDistribution}>
-                  {chartData.riskDistribution.map((entry, index) => (
+                <Pie data={chartData.riskDistribution} dataKey="value" nameKey="level" cx="50%" cy="50%" outerRadius={100}>
+                  {chartData.riskDistribution.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </RechartsPieChart>
+                </Pie>
                 <Tooltip formatter={(value, name) => [`${value} assets`, name]} />
               </RechartsPieChart>
             </ResponsiveContainer>

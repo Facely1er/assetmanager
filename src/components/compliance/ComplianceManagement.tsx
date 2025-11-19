@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  FileText, 
-  CheckCircle, 
-  AlertTriangle, 
-  Plus, 
-  Filter, 
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  FileText,
+  CheckCircle,
+  AlertTriangle,
+  Filter,
   Download,
   Shield,
   Target,
   Calendar,
   TrendingUp,
-  Users,
   Building2
 } from 'lucide-react';
-import { Asset } from '../../types/asset';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { complianceFrameworks } from '../../data/sampleAssets';
 import { exportToCSV } from '../../utils/assetUtils';
@@ -29,15 +26,11 @@ interface ComplianceFrameworkStatus {
 }
 
 export const ComplianceManagement: React.FC = () => {
-  const { assets, filteredAssets, updateFilters } = useAssetInventory();
+  const { assets, updateFilters } = useAssetInventory();
   const [selectedFramework, setSelectedFramework] = useState<string>('');
   const [frameworkStats, setFrameworkStats] = useState<ComplianceFrameworkStatus[]>([]);
 
-  useEffect(() => {
-    calculateFrameworkStats();
-  }, [assets]);
-
-  const calculateFrameworkStats = () => {
+  const calculateFrameworkStats = useCallback(() => {
     const stats = complianceFrameworks.map(framework => {
       const compliantAssets = assets.filter(asset => 
         asset.complianceFrameworks.includes(framework)
@@ -57,7 +50,11 @@ export const ComplianceManagement: React.FC = () => {
     });
 
     setFrameworkStats(stats);
-  };
+  }, [assets]);
+
+  useEffect(() => {
+    calculateFrameworkStats();
+  }, [calculateFrameworkStats]);
 
   const handleFrameworkFilter = (framework: string) => {
     setSelectedFramework(framework);
@@ -76,7 +73,7 @@ export const ComplianceManagement: React.FC = () => {
       );
       await exportToCSV(frameworkAssets);
       toast.success(`${framework} compliance report exported`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to export compliance report');
     }
   };

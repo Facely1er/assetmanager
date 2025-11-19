@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  CheckCircle, 
-  Circle, 
-  ArrowRight, 
-  Target, 
-  Users, 
-  Shield, 
-  Upload, 
-  BarChart3, 
-  Settings, 
-  Building2,
+import React, { useState } from 'react';
+import {
+  CheckCircle,
+  Circle,
+  ArrowRight,
+  Target,
+  Users,
+  Shield,
+  Upload,
+  BarChart3,
+  Settings,
   FileText,
   Zap,
   AlertTriangle,
