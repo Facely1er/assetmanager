@@ -1,5 +1,6 @@
 import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabase';
 import { Organization, OrganizationMember, Invitation, AuditLog } from '../types/organization';
+import { logError } from '../utils/errorHandling';
 
 type InvitationRole = Invitation['role'];
 
@@ -18,7 +19,7 @@ export const organizationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data || [];
     } catch (error) {
-      console.error('Error fetching organizations:', error);
+      logError(error, 'organizationService.getUserOrganizations');
       throw error;
     }
   },
@@ -66,7 +67,7 @@ export const organizationService = {
 
       return org;
     } catch (error) {
-      console.error('Error creating organization:', error);
+      logError(error, 'organizationService.createOrganization');
       throw error;
     }
   },
@@ -84,7 +85,7 @@ export const organizationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data;
     } catch (error) {
-      console.error('Error updating organization:', error);
+      logError(error, 'organizationService.updateOrganization');
       throw error;
     }
   },
@@ -104,7 +105,7 @@ export const organizationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data || [];
     } catch (error) {
-      console.error('Error fetching organization members:', error);
+      logError(error, 'organizationService.getOrganizationMembers');
       throw error;
     }
   },
@@ -149,7 +150,7 @@ export const organizationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data;
     } catch (error) {
-      console.error('Error inviting user:', error);
+      logError(error, 'organizationService.inviteUser');
       throw error;
     }
   },
@@ -172,7 +173,7 @@ export const organizationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data;
     } catch (error) {
-      console.error('Error inviting member:', error);
+      logError(error, 'organizationService.inviteMember');
       throw error;
     }
   },
@@ -215,7 +216,7 @@ export const organizationService = {
         .update({ accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
     } catch (error) {
-      console.error('Error accepting invitation:', error);
+      logError(error, 'organizationService.acceptInvitation');
       throw error;
     }
   },
@@ -231,7 +232,7 @@ export const organizationService = {
 
       if (error) throw new Error(handleSupabaseError(error));
     } catch (error) {
-      console.error('Error updating member role:', error);
+      logError(error, 'organizationService.updateMemberRole');
       throw error;
     }
   },
@@ -247,7 +248,7 @@ export const organizationService = {
 
       if (error) throw new Error(handleSupabaseError(error));
     } catch (error) {
-      console.error('Error removing member:', error);
+      logError(error, 'organizationService.removeMember');
       throw error;
     }
   },
@@ -268,7 +269,7 @@ export const organizationService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data || [];
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      logError(error, 'organizationService.getAuditLogs');
       throw error;
     }
   },
@@ -286,7 +287,7 @@ export const organizationService = {
 
       if (error) throw new Error(handleSupabaseError(error));
     } catch (error) {
-      console.error('Error switching organization:', error);
+      logError(error, 'organizationService.switchOrganization');
       throw error;
     }
   },

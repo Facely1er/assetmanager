@@ -1,6 +1,7 @@
 import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabase';
 import { Report } from '../types/organization';
 import { Asset } from '../types/asset';
+import { logError } from '../utils/errorHandling';
 
 // Dynamic imports for heavy libraries - only loaded when needed
 // This significantly reduces initial bundle size
@@ -10,17 +11,21 @@ export const reportingService = {
   async getReports(): Promise<Report[]> {
     // Demo mode - return empty array if Supabase is not configured
     if (!isSupabaseEnabled || !supabase) {
-      console.log('Running in demo mode - returning empty reports array');
+      if (import.meta.env.DEV) {
+        console.log('Running in demo mode - returning empty reports array');
+      }
       return Promise.resolve([]);
     }
-    
+
     try {
       // Test connectivity first
       const { checkSupabaseConnectivity } = await import('../lib/supabase');
       const isConnected = await checkSupabaseConnectivity();
-      
+
       if (!isConnected) {
-        console.log('Supabase not connected, returning empty reports');
+        if (import.meta.env.DEV) {
+          console.log('Supabase not connected, returning empty reports');
+        }
         return [];
       }
       
@@ -39,11 +44,13 @@ export const reportingService = {
         error.message.includes('network') ||
         error.message.includes('NetworkError')
       )) {
-        console.warn('Network error fetching reports, returning empty array:', error.message);
+        if (import.meta.env.DEV) {
+          console.warn('Network error fetching reports, returning empty array:', error.message);
+        }
         return [];
       }
-      
-      console.error('Error fetching reports:', error);
+
+      logError(error, 'reportingService.getReports');
       return []; // Return empty array instead of throwing
     }
   },
@@ -85,7 +92,7 @@ export const reportingService = {
       if (error) throw new Error(handleSupabaseError(error));
       return data;
     } catch (error) {
-      console.error('Error creating report:', error);
+      logError(error, 'reportingService.createReport');
       throw error;
     }
   },
@@ -107,7 +114,7 @@ export const reportingService = {
           break;
       }
     } catch (error) {
-      console.error('Error generating report:', error);
+      logError(error, 'reportingService.generateAssetSummaryReport');
       throw error;
     }
   },
@@ -157,7 +164,7 @@ export const reportingService = {
       // Save
       doc.save(`${framework}_compliance_report_${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
-      console.error('Error generating compliance report:', error);
+      logError(error, 'reportingService.generateComplianceReport');
       throw error;
     }
   },
@@ -212,7 +219,7 @@ export const reportingService = {
       // Save
       doc.save(`risk_assessment_report_${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
-      console.error('Error generating risk assessment report:', error);
+      logError(error, 'reportingService.generateRiskAssessmentReport');
       throw error;
     }
   },
