@@ -73,10 +73,16 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
       <div className="bg-gradient-to-r from-command-blue-600 via-command-blue-700 to-action-cyan-600 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-outfit font-bold mb-2">
-              Welcome to ERMITS CyberSoluce®
+            <h1 className="text-3xl font-outfit font-bold mb-1 leading-tight">
+              CyberSoluce<sup className="text-xl">™</sup>
             </h1>
-            <p className="text-lg opacity-90 mb-4">
+            <h2 className="text-xl font-outfit font-semibold mb-1 opacity-95">
+              Asset Manager
+            </h2>
+            <p className="text-sm opacity-80 mb-4">
+              by ERMITS
+            </p>
+            <p className="text-lg opacity-90 mb-4 mt-2">
               Your comprehensive asset inventory management platform
             </p>
             <div className="flex items-center space-x-6 text-sm">

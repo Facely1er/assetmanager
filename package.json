@@ -3,14 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "ERMITS CyberSoluce® - Comprehensive Asset Inventory Management Tool",
+  "description": "CyberSoluce™ Asset Manager by ERMITS - Comprehensive Asset Inventory Management Tool",
   "keywords": [
     "asset-inventory",
     "cybersecurity",
     "risk-management",
     "compliance"
   ],
-  "author": "ERMITS CyberSoluce®",
+  "author": "ERMITS Corporation",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

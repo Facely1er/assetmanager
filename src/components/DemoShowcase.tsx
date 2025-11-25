@@ -315,7 +315,7 @@ export const DemoShowcase: React.FC<DemoShowcaseProps> = ({ onStartDemo, onViewD
         {/* Call to Action */}
         <div className="mt-12 bg-gradient-to-r from-command-blue-600 to-action-cyan-600 rounded-xl p-8 text-white text-center">
           <h2 className="text-2xl font-outfit font-bold mb-4">
-            Ready to See ERMITS CyberSoluce® in Action?
+            Ready to See CyberSoluce™ Asset Manager in Action?
           </h2>
           <p className="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
             Choose a demo scenario that matches your industry and see how our platform can help with your asset inventory management needs.

@@ -178,8 +178,11 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             <div className="flex items-center">
               <Shield className="h-8 w-8 text-command-blue-600 dark:text-command-blue-400 mr-3" />
               <div>
-                <div className="font-outfit font-bold text-gray-900 dark:text-white">ERMITS</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">CyberSoluce®</div>
+                <div className="font-outfit font-bold text-gray-900 dark:text-white leading-tight">
+                  CyberSoluce<sup className="text-xs">™</sup>
+                </div>
+                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Asset Manager</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">by ERMITS</div>
               </div>
             </div>
           )}

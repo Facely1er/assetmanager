@@ -7,10 +7,10 @@ export * from './demoDataGenerator';
 
 // Additional data utilities
 export const APP_METADATA = {
-  name: 'ERMITS CyberSoluce®',
+  name: 'CyberSoluce™ Asset Manager',
   version: '1.0.0',
   description: 'Comprehensive Asset Inventory Management Tool for cybersecurity professionals',
-  author: 'ERMITS CyberSoluce®',
+  author: 'ERMITS Corporation',
   license: 'MIT',
   repository: 'https://github.com/ermits-cybersoluce/asset-inventory',
   homepage: 'https://jovial-halva-598fd3.netlify.app/',

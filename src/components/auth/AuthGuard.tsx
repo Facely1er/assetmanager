@@ -38,7 +38,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
           <div className="mb-4">
             <Shield className="h-12 w-12 mx-auto text-command-blue-600 animate-pulse" />
           </div>
-          <LoadingSpinner size="lg" text="Loading ERMITS CyberSoluce®..." />
+          <LoadingSpinner size="lg" text="Loading CyberSoluce™ Asset Manager..." />
         </div>
       </div>
     );

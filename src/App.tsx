@@ -90,7 +90,7 @@ const App: React.FC = () => {
             {/* Application Content with Suspense */}
             <Suspense fallback={
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <LoadingSpinner size="lg" text="Loading ERMITS CyberSoluce®..." />
+                <LoadingSpinner size="lg" text="Loading CyberSoluce™ Asset Manager..." />
               </div>
             }>
               {showStartScreen ? (

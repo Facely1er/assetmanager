@@ -133,7 +133,7 @@ export const SystemSettings: React.FC = () => {
       const testPayload = {
         event: 'test',
         timestamp: new Date().toISOString(),
-        data: { message: 'Test webhook from ERMITS CyberSoluce®' }
+        data: { message: 'Test webhook from CyberSoluce™ Asset Manager' }
       };
 
       // In a real implementation, this would make an actual HTTP request

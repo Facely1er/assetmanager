@@ -1,6 +1,6 @@
 {
-  "name": "ERMITS CyberSoluce® - Asset Inventory Management",
-  "short_name": "ERMITS Asset Manager",
+  "name": "CyberSoluce™ Asset Manager by ERMITS",
+  "short_name": "CyberSoluce Asset Manager",
   "description": "Comprehensive Asset Inventory Management Tool for cybersecurity professionals",
   "start_url": "/",
   "display": "standalone",

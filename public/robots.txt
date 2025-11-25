@@ -1,4 +1,4 @@
-# ERMITS CyberSoluce® - Asset Inventory Management
+# CyberSoluce™ Asset Manager by ERMITS
 # Production robots.txt
 
 User-agent: *

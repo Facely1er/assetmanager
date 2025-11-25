@@ -110,9 +110,15 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
               </div>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-outfit font-bold text-gray-900 dark:text-white mb-6">
-              ERMITS CyberSoluce<sup className="text-2xl">®</sup>
+            <h1 className="text-5xl md:text-6xl font-outfit font-bold text-gray-900 dark:text-white mb-2 leading-tight">
+              CyberSoluce<sup className="text-3xl">™</sup>
             </h1>
+            <h2 className="text-2xl md:text-3xl font-outfit font-semibold text-gray-800 dark:text-gray-200 mb-1">
+              Asset Manager
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8">
+              by ERMITS
+            </p>
             
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
               A comprehensive asset inventory management platform for cybersecurity professionals
@@ -312,7 +318,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
             Ready to Improve Your Asset Management?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Explore how ERMITS CyberSoluce® can help with your asset inventory management needs.
+            Explore how CyberSoluce™ Asset Manager by ERMITS can help with your asset inventory management needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button

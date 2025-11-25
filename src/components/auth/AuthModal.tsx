@@ -89,7 +89,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   {isSignUp ? 'Create Account' : 'Sign In'}
                 </h2>
                 <p className="text-sm opacity-90">
-                  {isSignUp ? 'Join ERMITS CyberSoluce®' : 'Welcome back'}
+                  {isSignUp ? 'Join CyberSoluce™ Asset Manager' : 'Welcome back'}
                 </p>
               </div>
             </div>
