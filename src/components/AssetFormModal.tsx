@@ -455,7 +455,6 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
 
           {/* Hidden Tabs - Keep for future use */}
           {false && activeTab === 'compliance' && (
@@ -534,8 +533,6 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
-
           )}
         </form>
 
