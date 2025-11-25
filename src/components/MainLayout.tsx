@@ -214,11 +214,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
       case 'help':
         return (
           <div className="p-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <h2 className="text-2xl font-outfit font-bold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+              <h2 className="text-2xl font-outfit font-bold text-gray-900 dark:text-white mb-4">
                 Help & Support
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Additional support resources are under development.
               </p>
               <div className="space-y-4">
@@ -257,7 +257,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationSidebar
         activeView={activeView}
         onViewChange={setActiveView}

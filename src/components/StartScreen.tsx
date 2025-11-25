@@ -98,7 +98,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-command-blue-600/10 to-action-cyan-600/10"></div>
@@ -110,11 +110,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
               </div>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-outfit font-bold text-gray-900 mb-6">
+            <h1 className="text-5xl md:text-6xl font-outfit font-bold text-gray-900 dark:text-white mb-6">
               ERMITS CyberSoluce<sup className="text-2xl">®</sup>
             </h1>
             
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
               A comprehensive asset inventory management platform for cybersecurity professionals
             </p>
             
@@ -130,7 +130,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
               
               <button
                 onClick={onLoadDemo}
-                className="inline-flex items-center px-8 py-4 bg-white text-command-blue-600 text-lg font-semibold rounded-xl border-2 border-command-blue-200 hover:border-command-blue-300 hover:bg-command-blue-50 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-800 text-command-blue-600 dark:text-command-blue-400 text-lg font-semibold rounded-xl border-2 border-command-blue-200 dark:border-command-blue-700 hover:border-command-blue-300 dark:hover:border-command-blue-600 hover:bg-command-blue-50 dark:hover:bg-command-blue-900/30 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 <BookOpen className="h-5 w-5 mr-2" />
                 View Demo
@@ -154,8 +154,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
                   <div className="flex justify-center mb-2">
                     <stat.icon className="h-8 w-8 text-command-blue-600" />
                   </div>
-                  <div className="text-3xl font-outfit font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-3xl font-outfit font-bold text-gray-900 dark:text-white">{stat.value}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -164,13 +164,13 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
       </div>
 
       {/* Features Section */}
-      <div className="py-20 bg-white">
+      <div className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-outfit font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-outfit font-bold text-gray-900 dark:text-white mb-4">
               Asset Management Features
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Features designed to help streamline your cybersecurity operations and improve asset visibility
             </p>
           </div>
@@ -183,8 +183,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
                   key={index}
                   className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ${
                     activeFeature === index
-                      ? 'bg-gradient-to-r from-command-blue-50 to-action-cyan-50 border-2 border-command-blue-200 shadow-lg'
-                      : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                      ? 'bg-gradient-to-r from-command-blue-50 to-action-cyan-50 dark:from-command-blue-900/30 dark:to-action-cyan-900/30 border-2 border-command-blue-200 dark:border-command-blue-700 shadow-lg'
+                      : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 border-transparent'
                   }`}
                   onClick={() => setActiveFeature(index)}
                 >
@@ -195,13 +195,13 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
                       <feature.icon className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-outfit font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-outfit font-semibold text-gray-900 dark:text-white mb-2">
                         {feature.title}
                       </h3>
-                      <p className="text-gray-600 mb-3">{feature.description}</p>
+                      <p className="text-gray-600 dark:text-gray-300 mb-3">{feature.description}</p>
                       <ul className="space-y-1">
                         {feature.benefits.map((benefit, benefitIndex) => (
-                          <li key={benefitIndex} className="flex items-center text-sm text-gray-500">
+                          <li key={benefitIndex} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                             <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                             {benefit}
                           </li>
