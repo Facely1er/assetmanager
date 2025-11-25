@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BarChart3, Download, Calendar, Filter, TrendingUp, Shield, AlertTriangle, FileText, Activity } from 'lucide-react';
 import { Report } from '../../types/organization';
 import { reportingService } from '../../services/reportingService';
@@ -53,11 +53,7 @@ export const AdvancedReportingDashboard: React.FC = () => {
 
   const COLORS: readonly string[] = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'] as const;
 
-  useEffect(() => {
-    loadReports();
-  }, []);
-
-  const loadReports = async () => {
+  const loadReports = useCallback(async () => {
     setLoading(true);
     try {
       const data = await reportingService.getReports();
@@ -67,7 +63,11 @@ export const AdvancedReportingDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
 
   const generateReport = async (type: 'pdf' | 'excel' | 'csv') => {
     try {
@@ -421,7 +421,7 @@ export const AdvancedReportingDashboard: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {asset.vulnerabilities.length}
+                          {asset.vulnerabilities?.length || 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {asset.owner}

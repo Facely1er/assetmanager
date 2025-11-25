@@ -455,3 +455,11 @@ html, body, #root {
     width: var(--progress-percentage, 0%);
     transition: width 0.3s ease-in-out;
   }
+
+  /* Dashboard Progress Bars */
+  .dashboard-progress-bar {
+    height: 0.5rem;
+    border-radius: 9999px;
+    width: var(--progress-width, 0%);
+    transition: width 0.3s ease-in-out;
+  }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { 
   Shield, 
   TrendingUp, 
@@ -16,6 +16,19 @@ import {
 import { AssetStats } from '../types/asset';
 import { format, subDays } from 'date-fns';
 
+// Helper component for progress bar with dynamic width
+const ProgressBar: React.FC<{ percentage: number; className?: string }> = ({ percentage, className = '' }) => {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (barRef.current) {
+      barRef.current.style.setProperty('--progress-width', `${percentage}%`);
+    }
+  }, [percentage]);
+
+  return <div ref={barRef} className={`dashboard-progress-bar ${className}`} />;
+};
+
 interface DashboardHomeProps {
   stats: AssetStats;
   onNavigateToAssets: () => void;
@@ -32,10 +45,10 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
   onNavigateToActivity,
 }) => {
   const criticalityPercentages = {
-    critical: stats.total > 0 ? Math.round((stats.byCriticality.Critical || 0) / stats.total * 100) : 0,
-    high: stats.total > 0 ? Math.round((stats.byCriticality.High || 0) / stats.total * 100) : 0,
-    medium: stats.total > 0 ? Math.round((stats.byCriticality.Medium || 0) / stats.total * 100) : 0,
-    low: stats.total > 0 ? Math.round((stats.byCriticality.Low || 0) / stats.total * 100) : 0,
+    critical: stats.total > 0 ? Math.round((stats.byCriticality['Critical'] || 0) / stats.total * 100) : 0,
+    high: stats.total > 0 ? Math.round((stats.byCriticality['High'] || 0) / stats.total * 100) : 0,
+    medium: stats.total > 0 ? Math.round((stats.byCriticality['Medium'] || 0) / stats.total * 100) : 0,
+    low: stats.total > 0 ? Math.round((stats.byCriticality['Low'] || 0) / stats.total * 100) : 0,
   };
 
   const riskScore = Math.round(
@@ -251,7 +264,8 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div 
+                      <ProgressBar 
+                        percentage={percentage}
                         className={`h-2 rounded-full ${
                           type === 'Server' ? 'bg-blue-500' :
                           type === 'Database' ? 'bg-green-500' :
@@ -260,8 +274,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                           type === 'Endpoint' ? 'bg-pink-500' :
                           'bg-cyan-500'
                         }`}
-                        style={{ width: `${percentage}%` }}
-                      ></div>
+                      />
                     </div>
                     <span className="text-sm text-gray-600 w-12 text-right">{count}</span>
                   </div>
@@ -279,10 +292,10 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
           </div>
           <div className="space-y-4">
             {[
-              { level: 'Critical', count: stats.byCriticality.Critical || 0, color: 'bg-red-500', textColor: 'text-red-600' },
-              { level: 'High', count: stats.byCriticality.High || 0, color: 'bg-orange-500', textColor: 'text-orange-600' },
-              { level: 'Medium', count: stats.byCriticality.Medium || 0, color: 'bg-yellow-500', textColor: 'text-yellow-600' },
-              { level: 'Low', count: stats.byCriticality.Low || 0, color: 'bg-green-500', textColor: 'text-green-600' },
+              { level: 'Critical', count: stats.byCriticality['Critical'] || 0, color: 'bg-red-500', textColor: 'text-red-600' },
+              { level: 'High', count: stats.byCriticality['High'] || 0, color: 'bg-orange-500', textColor: 'text-orange-600' },
+              { level: 'Medium', count: stats.byCriticality['Medium'] || 0, color: 'bg-yellow-500', textColor: 'text-yellow-600' },
+              { level: 'Low', count: stats.byCriticality['Low'] || 0, color: 'bg-green-500', textColor: 'text-green-600' },
             ].map(({ level, count, color, textColor }) => {
               const percentage = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
               return (
@@ -293,10 +306,10 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div 
+                      <ProgressBar 
+                        percentage={percentage}
                         className={`h-2 rounded-full ${color}`}
-                        style={{ width: `${percentage}%` }}
-                      ></div>
+                      />
                     </div>
                     <span className={`text-sm font-medium w-12 text-right ${textColor}`}>{count}</span>
                   </div>
