@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase, isSupabaseEnabled } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { logger } from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -47,9 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const isConnected = await checkSupabaseConnectivity();
         
         if (!isConnected) {
-          if (import.meta.env.DEV) {
-            console.log('Supabase connectivity failed, running in demo mode');
-          }
+          logger.debug('Supabase connectivity failed, running in demo mode');
           setLoading(false);
           return;
         }
@@ -58,23 +57,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (error) {
           // Check if it's a network error
           if (error.message.includes('fetch') || error.message.includes('network')) {
-            if (import.meta.env.DEV) {
-              console.warn('Network error getting session, running in demo mode:', error);
-            }
+            logger.warn('Network error getting session, running in demo mode:', error);
             setLoading(false);
             return;
           }
-          if (import.meta.env.DEV) {
-            console.error('Error getting session:', error);
-          }
+          logger.error('Error getting session', error instanceof Error ? error : new Error(String(error)));
         } else {
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.warn('Supabase connection failed, running in demo mode:', error);
-        }
+        logger.warn('Supabase connection failed, running in demo mode:', error);
       } finally {
         setLoading(false);
       }
@@ -86,9 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (import.meta.env.DEV) {
-            console.log('Auth state changed:', event, session?.user?.email);
-          }
+          logger.debug('Auth state changed:', event, session?.user?.email);
 
           setSession(session);
           setUser(session?.user ?? null);
@@ -98,9 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } else if (event === 'SIGNED_OUT') {
             toast.success('Successfully signed out!');
           } else if (event === 'TOKEN_REFRESHED') {
-            if (import.meta.env.DEV) {
-              console.log('Token refreshed');
-            }
+            logger.debug('Token refreshed');
           }
 
           setLoading(false);
@@ -111,9 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         subscription.unsubscribe();
       };
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.warn('Failed to set up auth state listener, running in demo mode:', error);
-      }
+      logger.warn('Failed to set up auth state listener, running in demo mode:', error);
       return () => {}; // Return empty cleanup function
     }
   }, []);

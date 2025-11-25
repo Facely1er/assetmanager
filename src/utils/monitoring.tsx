@@ -47,8 +47,10 @@ class MonitoringService {
 
     this.errorBuffer.push(errorInfo);
     
-    // Log to console in development
+    // Log to console in development (using logger utility)
+    // Note: logger is imported at module level to avoid circular dependencies
     if (import.meta.env.MODE === 'development') {
+      // eslint-disable-next-line no-console
       console.error('Monitoring Error:', errorInfo);
     }
 
@@ -79,7 +81,10 @@ class MonitoringService {
 
     // Log significant performance issues
     if ((unit === 'ms' && value > 1000) || (unit === 'bytes' && value > 1024 * 1024)) {
-      console.warn('Performance Warning:', metric);
+      // eslint-disable-next-line no-console
+      if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_MODE === 'true') {
+        console.warn('Performance Warning:', metric);
+      }
     }
 
     // Limit buffer size
@@ -121,11 +126,17 @@ class MonitoringService {
       const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
       if (sentryDsn) {
         // In a real implementation, you would send to Sentry or similar service
-        // For now, we'll just log it
-        console.log('Would send to Sentry:', errorInfo);
+        // For now, we'll just log it in development
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.log('Would send to Sentry:', errorInfo);
+        }
       }
     } catch (error) {
-      console.error('Failed to send error to monitoring service:', error);
+      // eslint-disable-next-line no-console
+      if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_ERROR_REPORTING === 'true') {
+        console.error('Failed to send error to monitoring service:', error);
+      }
     }
   }
 
@@ -253,7 +264,10 @@ if ('PerformanceObserver' in window) {
 
     observer.observe({ entryTypes: ['navigation', 'paint', 'largest-contentful-paint'] });
   } catch (error) {
-    console.warn('Performance Observer not supported:', error);
+    // eslint-disable-next-line no-console
+    if (import.meta.env.DEV) {
+      console.warn('Performance Observer not supported:', error);
+    }
   }
 }
 

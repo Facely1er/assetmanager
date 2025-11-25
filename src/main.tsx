@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './index.css';
 import { setupGlobalErrorHandling } from './utils/monitoring';
 import { performanceMonitor } from './utils/performance';
+import { logger } from './utils/logger';
 
 // Setup global error handling for production
 setupGlobalErrorHandling();
@@ -32,9 +33,7 @@ try {
     }
   }, 100);
 } catch (error) {
-  if (import.meta.env.DEV) {
-    console.error('Failed to initialize application:', error);
-  }
+  logger.error('Failed to initialize application', error instanceof Error ? error : new Error(String(error)));
 
   const errorMessage = error instanceof Error ? error.message : 'Unknown error';
   const errorStack = error instanceof Error ? error.stack : '';

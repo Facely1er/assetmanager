@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database';
+import { logger } from '../utils/logger';
 
 // Environment variable validation with better error messages
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -51,9 +52,8 @@ let connectivityStatus = {
 };
 
 if (!isSupabaseConfigured) {
-  if (import.meta.env.DEV) {
-    console.warn(`Supabase not configured - running in demo mode (${configValidation.reason})`);
-    console.info(`
+  logger.warn(`Supabase not configured - running in demo mode (${configValidation.reason})`);
+  logger.info(`
     To enable real database persistence:
     1. Create a Supabase project at https://supabase.com
     2. Copy your Project URL and anon key from Project Settings → API
@@ -62,7 +62,6 @@ if (!isSupabaseConfigured) {
     
     Current config: URL=${supabaseUrl?.substring(0, 20)}..., Key=${supabaseAnonKey?.substring(0, 20)}...
     `);
-  }
 }
 
 // Create Supabase client with enhanced configuration
@@ -123,9 +122,7 @@ const testSupabaseConnectivity = async (): Promise<boolean> => {
       throw new Error('Invalid response');
     }
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('Supabase connectivity test failed, using demo mode:', error);
-    }
+    logger.warn('Supabase connectivity test failed, using demo mode:', error);
     connectivityStatus = { validated: true, lastCheck: now, isOnline: false };
     return false;
   }
@@ -174,14 +171,10 @@ export const monitorConnection = () => {
     const isOnline = await testSupabaseConnectivity();
     if (!isOnline && connectivityStatus.isOnline) {
       // Connection lost
-      if (import.meta.env.DEV) {
-        console.warn('Supabase connection lost, switching to demo mode');
-      }
+      logger.warn('Supabase connection lost, switching to demo mode');
     } else if (isOnline && !connectivityStatus.isOnline) {
       // Connection restored
-      if (import.meta.env.DEV) {
-        console.info('Supabase connection restored');
-      }
+      logger.info('Supabase connection restored');
     }
   }, 60000); // Check every minute
   
@@ -190,9 +183,7 @@ export const monitorConnection = () => {
 
 // Enhanced error handling with categorization
 export const handleSupabaseError = (error: unknown): string => {
-  if (import.meta.env.DEV) {
-    console.error('Supabase error details:', error);
-  }
+  logger.error('Supabase error occurred', error instanceof Error ? error : new Error(String(error)));
   
   // Network errors
   if (error?.message?.includes('fetch') || error?.name === 'TypeError') {
