@@ -14,7 +14,7 @@ import {
   Filter,
   MoreHorizontal
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { AuthModal } from '../auth/AuthModal';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';

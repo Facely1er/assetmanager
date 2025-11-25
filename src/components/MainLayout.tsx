@@ -2,7 +2,7 @@ import React, { useState, Suspense, lazy, useCallback } from 'react';
 import { NavigationSidebar } from './NavigationSidebar';
 import { DashboardHome } from './DashboardHome';
 import { LoadingSpinner } from './LoadingSpinner';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useAssetInventory } from '../contexts/AssetInventoryContext';
 
 // Lazy load components for better performance

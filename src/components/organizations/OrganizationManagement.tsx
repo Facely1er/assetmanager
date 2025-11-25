@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Organization, OrganizationMember } from '../../types/organization';
 import { organizationService } from '../../services/organizationService';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { TeamManagementModal } from '../team/TeamManagementModal';
 import toast from 'react-hot-toast';
 

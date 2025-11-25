@@ -16,7 +16,7 @@ import {
   Lock,
   Zap
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { isSupabaseEnabled } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 

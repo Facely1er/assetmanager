@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { AuthModal } from './AuthModal';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { Shield, Lock } from 'lucide-react';
