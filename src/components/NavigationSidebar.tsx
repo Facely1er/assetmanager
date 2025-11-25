@@ -18,7 +18,9 @@ import {
   Play,
   Database,
   Network,
-  Lock
+  Lock,
+  CheckCircle2,
+  TrendingUp
 } from 'lucide-react';
 
 interface NavigationSidebarProps {
@@ -100,6 +102,30 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       label: 'Vulnerabilities',
       icon: AlertTriangle,
       description: 'Security issues'
+    },
+    {
+      id: 'mitigation',
+      label: 'Mitigation',
+      icon: CheckCircle2,
+      description: 'Risk mitigation planning'
+    },
+    {
+      id: 'business-impact',
+      label: 'Business Impact',
+      icon: Building2,
+      description: 'BIA and continuity planning'
+    },
+    {
+      id: 'nist',
+      label: 'NIST Framework',
+      icon: Shield,
+      description: 'NIST CSF implementation'
+    },
+    {
+      id: 'framework',
+      label: 'Framework',
+      icon: TrendingUp,
+      description: 'Implementation tracking'
     },
     {
       id: 'organizations',

@@ -23,6 +23,9 @@
     "analyze": "npx vite-bundle-visualizer"
   },
   "dependencies": {
+    "@nivo/core": "^0.99.0",
+    "@nivo/heatmap": "^0.99.0",
+    "@nivo/radar": "^0.99.0",
     "@supabase/functions-js": "^2.4.5",
     "@supabase/supabase-js": "^2.53.0",
     "date-fns": "^3.0.0",

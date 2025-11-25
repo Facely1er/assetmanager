@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ERMITS CyberSoluce® - Comprehensive Asset Inventory Management Tool for cybersecurity professionals. Track, manage, and secure your digital assets with advanced filtering, compliance mapping, and risk assessment features." />
     <meta name="keywords" content="asset inventory, cybersecurity, risk management, compliance, vulnerability management, IT assets" />
@@ -37,16 +38,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Enhanced Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'nonce-vite-dev' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; worker-src 'self' blob:; child-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; worker-src 'self' blob:; child-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), fullscreen=(self), payment=()">
     
-    <!-- Performance optimization -->
-    <link rel="preload" href="/src/main.tsx" as="script">
-    <link rel="modulepreload" href="/src/App.tsx">
+    <!-- Performance optimization - removed in production build (handled by Vite) -->
     
     <!-- Critical CSS -->
     <style>
@@ -86,36 +85,35 @@
       // Hide loading screen when app is ready
       window.addEventListener('load', () => {
         setTimeout(() => {
-          document.getElementById('loading')?.classList.add('hidden');
+          const loadingEl = document.getElementById('loading');
+          if (loadingEl) loadingEl.classList.add('hidden');
         }, 100);
       });
       
-      // Service Worker with error handling
+      // Service Worker with error handling (production-safe)
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-              // Update available notification
-              registration.addEventListener('updatefound', () => {
-                console.log('Service worker update available');
-              });
+            .then(() => {
+              // Service worker registered successfully
             })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
+            .catch(() => {
+              // Service worker registration failed - app will work without it
             });
         });
       }
       
       // Global error handler for production monitoring
+      // Note: Error handling is managed by the application's error boundary
+      // This is a fallback for unhandled errors
       window.addEventListener('error', (event) => {
-        console.error('Global error:', event.error);
-        // In production, send to monitoring service
+        // In production, send to monitoring service (e.g., Sentry)
+        // if (window.Sentry) window.Sentry.captureException(event.error);
       });
       
       window.addEventListener('unhandledrejection', (event) => {
-        console.error('Unhandled promise rejection:', event.reason);
         // In production, send to monitoring service
+        // if (window.Sentry) window.Sentry.captureException(event.reason);
       });
     </script>
   </body>

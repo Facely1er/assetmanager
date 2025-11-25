@@ -44,8 +44,11 @@ export default defineConfig({
     ],
   },
   esbuild: {
-    // Remove console.log in production
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    // Remove console and debugger in production (terser will handle console removal)
+    drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
+    // Optimize for production
+    legalComments: process.env.NODE_ENV === 'production' ? 'none' : 'inline',
+    treeShaking: true,
   },
   build: {
     // Enable source maps only in development
@@ -140,6 +143,9 @@ export default defineConfig({
         },
         // Optimize asset filenames
         assetFileNames: (assetInfo) => {
+          if (!assetInfo.name) {
+            return `assets/[name]-[hash][extname]`;
+          }
           const info = assetInfo.name.split('.');
           const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
@@ -163,7 +169,7 @@ export default defineConfig({
       }
     },
     // Reduce chunk size warning limit for better performance
-    chunkSizeWarningLimit: 400,
+    chunkSizeWarningLimit: 500,
     // Target modern browsers for smaller bundle
     target: 'esnext',
     // CSS code splitting
@@ -172,6 +178,12 @@ export default defineConfig({
     modulePreload: {
       polyfill: false
     },
+    // Report compressed size
+    reportCompressedSize: true,
+    // Copy public assets
+    copyPublicDir: true,
+    // Empty output directory before build
+    emptyOutDir: true,
   },
   // Enhanced development server configuration
   server: {

@@ -5,6 +5,7 @@ export * from './excelUtils';
 export * from './validation';
 export * from './errorHandling';
 export * from './constants';
+export * from './dependencyUtils';
 
 // Common utility functions
 export const formatDate = (date: Date): string => {

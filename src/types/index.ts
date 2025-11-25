@@ -2,6 +2,12 @@
 export * from './asset';
 export * from './organization';
 export * from './database';
+export * from './risk';
+export * from './mitigation';
+export * from './business-impact';
+export * from './nist';
+export * from './framework';
+export * from './dependency';
 
 // Global type definitions
 export interface ApiResponse<T = unknown> {

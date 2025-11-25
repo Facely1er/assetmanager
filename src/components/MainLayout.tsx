@@ -12,7 +12,7 @@ const GuidedWorkflow = lazy(() => import('./GuidedWorkflow'));
 const AdvancedReportingDashboard = lazy(() => import('./reports/AdvancedReportingDashboard'));
 const ComplianceManagement = lazy(() => import('./compliance/ComplianceManagement'));
 const PrivacyComplianceDashboard = lazy(() => import('./privacy/PrivacyComplianceDashboard'));
-const DependenciesMappingDashboard = lazy(() => import('./dependencies/DependenciesMappingDashboard'));
+const DependenciesPage = lazy(() => import('./dependencies/DependenciesPage'));
 const DataProtectionDashboard = lazy(() => import('./protection/DataProtectionDashboard'));
 const VulnerabilityDashboard = lazy(() => import('./vulnerabilities/VulnerabilityDashboard'));
 const OrganizationManagement = lazy(() => import('./organizations/OrganizationManagement'));
@@ -20,6 +20,10 @@ const UserManagement = lazy(() => import('./users/UserManagement'));
 const ActivityLog = lazy(() => import('./activity/ActivityLog'));
 const SystemSettings = lazy(() => import('./settings/SystemSettings'));
 const DemoShowcase = lazy(() => import('./DemoShowcase'));
+const MitigationPageWrapper = lazy(() => import('./mitigation/MitigationPageWrapper'));
+const BusinessImpactPageWrapper = lazy(() => import('./business-impact/BusinessImpactPageWrapper'));
+const NISTPageWrapper = lazy(() => import('./nist/NISTPageWrapper'));
+const FrameworkPageWrapper = lazy(() => import('./framework/FrameworkPageWrapper'));
 
 interface MainLayoutProps {
   onShowStartScreen: () => void;
@@ -135,7 +139,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
       case 'dependencies':
         return (
           <Suspense fallback={<LoadingFallback />}>
-            <DependenciesMappingDashboard />
+            <DependenciesPage />
           </Suspense>
         );
       case 'data-protection':
@@ -148,6 +152,30 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen }) => 
         return (
           <Suspense fallback={<LoadingFallback />}>
             <VulnerabilityDashboard />
+          </Suspense>
+        );
+      case 'mitigation':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <MitigationPageWrapper />
+          </Suspense>
+        );
+      case 'business-impact':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <BusinessImpactPageWrapper />
+          </Suspense>
+        );
+      case 'nist':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <NISTPageWrapper />
+          </Suspense>
+        );
+      case 'framework':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <FrameworkPageWrapper />
           </Suspense>
         );
       case 'organizations':

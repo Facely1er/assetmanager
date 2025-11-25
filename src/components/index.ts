@@ -44,3 +44,14 @@ export { OrganizationManagement } from './organizations/OrganizationManagement';
 export { UserManagement } from './users/UserManagement';
 export { ActivityLog } from './activity/ActivityLog';
 export { SystemSettings } from './settings/SystemSettings';
+
+// DependencyManager features - lazily loaded in MainLayout
+export { MitigationPage } from './mitigation/MitigationPage';
+export { MitigationPageWrapper } from './mitigation/MitigationPageWrapper';
+export { BusinessImpactPage } from './business-impact/BusinessImpactPage';
+export { BusinessImpactPageWrapper } from './business-impact/BusinessImpactPageWrapper';
+export { NISTPage } from './nist/NISTPage';
+export { NISTPageWrapper } from './nist/NISTPageWrapper';
+export { FrameworkPage } from './framework/FrameworkPage';
+export { FrameworkPageWrapper } from './framework/FrameworkPageWrapper';
+export { RiskForm } from './risks/RiskForm';
