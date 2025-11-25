@@ -2,9 +2,12 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../cybersoluce"
 		}
-	]
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/node_modules": true
+		}
+	}
 }
