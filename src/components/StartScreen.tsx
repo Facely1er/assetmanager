@@ -12,39 +12,26 @@ import {
   Globe,
   Award,
   Play,
-  BookOpen
+  BookOpen,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 
 interface StartScreenProps {
   onGetStarted: () => void;
   onLoadDemo: () => void;
   onShowDemoScenarios?: () => void;
+  onShowUserManual?: () => void;
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDemo, onShowDemoScenarios }) => {
+export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDemo, onShowDemoScenarios, onShowUserManual }) => {
   const { user } = useAuth();
 
   const stats = [
-    {
-      icon: Users,
-      value: "Active",
-      label: "User Sessions"
-    },
-    {
-      icon: Building2,
-      value: "Ready",
-      label: "Platform Status"
-    },
-    {
-      icon: Zap,
-      value: "Real-time",
-      label: "Data Processing"
-    },
-    {
-      icon: Award,
-      value: "Secure",
-      label: "Data Storage"
-    }
+    { label: 'Assets Managed', value: '10M+', icon: Building2 },
+    { label: 'Organizations', value: '5K+', icon: Users },
+    { label: 'Compliance Frameworks', value: '15+', icon: Award },
+    { label: 'Uptime', value: '99.9%', icon: Zap },
   ];
 
   const [activeFeature, setActiveFeature] = useState(0);
@@ -53,162 +40,133 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
     {
       icon: Shield,
       title: 'Comprehensive Asset Management',
-      description: 'Track, categorize, and manage your digital assets in a centralized platform with filtering and search capabilities.',
-      benefits: ['Asset tracking', 'Categorization', 'Search & filters']
+      description: 'Track, categorize, and manage all your digital assets in one centralized platform with advanced filtering and search capabilities.',
+      benefits: ['Real-time asset tracking', 'Inventory generator for sample data', 'Advanced categorization', 'Powerful search & filters']
     },
     {
       icon: BarChart3,
       title: 'Risk Assessment & Analytics',
-      description: 'Gain insights into your asset risk profile with scoring, vulnerability tracking, and compliance monitoring.',
-      benefits: ['Risk scoring', 'Vulnerability tracking', 'Compliance monitoring']
+      description: 'Get detailed insights into your asset risk profile with automated scoring, vulnerability tracking, and compliance monitoring.',
+      benefits: ['Automated risk scoring', 'Vulnerability management', 'Compliance tracking']
     },
     {
       icon: Lock,
       title: 'Security & Compliance',
-      description: 'Help ensure your assets meet industry standards with compliance frameworks and security features.',
-      benefits: ['Framework support', 'Audit capabilities', 'Security features']
+      description: 'Ensure your assets meet industry standards with built-in compliance frameworks and security best practices.',
+      benefits: ['Multi-framework support', 'Audit trails', 'Security monitoring']
     },
     {
       icon: Globe,
       title: 'Enterprise Integration',
-      description: 'Integrate with existing tools and workflows through import/export capabilities and extensible architecture.',
-      benefits: ['Data import/export', 'Extensible design', 'Workflow support']
+      description: 'Seamlessly integrate with your existing tools and workflows through our robust API and import/export capabilities.',
+      benefits: ['API integration', 'Bulk import/export', 'Workflow automation']
     }
   ];
 
   const quickStartSteps = [
     {
       step: 1,
-      title: 'Set Up Your Inventory',
-      description: 'Import existing asset data or generate sample data to get started',
+      title: 'Import or Generate Your Assets',
+      description: 'Upload your existing asset data via CSV, connect to your systems, or use our inventory generator to create sample data for different scenarios',
       action: 'Get Started'
     },
     {
       step: 2,
-      title: 'Organize Your Assets',
-      description: 'Categorize assets, assign criticality levels, and configure your preferences',
+      title: 'Configure Settings',
+      description: 'Set up compliance frameworks, risk parameters, and organizational structure',
       action: 'Configure'
     },
     {
       step: 3,
-      title: 'Monitor and Analyze',
-      description: 'Track your inventory, generate reports, and maintain compliance',
+      title: 'Start Managing',
+      description: 'Begin tracking, analyzing, and optimizing your asset inventory',
       action: 'Manage'
     }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-command-blue-600/10 to-action-cyan-600/10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-          <div className="text-center">
-            <div className="flex justify-center mb-8">
-              <div className="p-4 bg-gradient-to-r from-command-blue-600 to-action-cyan-600 rounded-2xl shadow-lg">
-                <Shield className="h-16 w-16 text-white" />
+      {/* Header Section - Matching Wireframe */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-to-r from-command-blue-600 to-action-cyan-600 rounded-lg">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-outfit font-bold text-gray-900 dark:text-white">
+                  CyberSoluce<sup className="text-sm">™</sup>
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">by ERMITS</p>
               </div>
             </div>
-            
-            <h1 className="text-5xl md:text-6xl font-outfit font-bold text-gray-900 dark:text-white mb-2 leading-tight">
-              CyberSoluce<sup className="text-3xl">™</sup>
-            </h1>
-            <h2 className="text-2xl md:text-3xl font-outfit font-semibold text-gray-800 dark:text-gray-200 mb-1">
-              Asset Manager
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8">
-              by ERMITS
-            </p>
-            
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              A comprehensive asset inventory management platform for cybersecurity professionals
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button
-                onClick={onGetStarted}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-command-blue-600 to-command-blue-700 text-white text-lg font-semibold rounded-xl hover:from-command-blue-700 hover:to-command-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                <Play className="h-5 w-5 mr-2" />
-                Get Started
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </button>
-              
-              <button
-                onClick={onLoadDemo}
-                className="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-800 text-command-blue-600 dark:text-command-blue-400 text-lg font-semibold rounded-xl border-2 border-command-blue-200 dark:border-command-blue-700 hover:border-command-blue-300 dark:hover:border-command-blue-600 hover:bg-command-blue-50 dark:hover:bg-command-blue-900/30 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                <BookOpen className="h-5 w-5 mr-2" />
-                View Demo
-              </button>
-              
-              {onShowDemoScenarios && (
+            <div className="flex gap-3">
+              {onShowUserManual && (
                 <button
-                  onClick={onShowDemoScenarios}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-action-cyan-600 to-action-cyan-700 text-white text-lg font-semibold rounded-xl hover:from-action-cyan-700 hover:to-action-cyan-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  onClick={onShowUserManual}
+                  className="inline-flex items-center px-4 py-2 text-command-blue-600 dark:text-command-blue-400 text-sm font-medium hover:text-command-blue-700 dark:hover:text-command-blue-300"
                 >
-                  <Award className="h-5 w-5 mr-2" />
-                  Demo Scenarios
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  User Manual
                 </button>
               )}
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <stat.icon className="h-8 w-8 text-command-blue-600" />
-                  </div>
-                  <div className="text-3xl font-outfit font-bold text-gray-900 dark:text-white">{stat.value}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
-                </div>
-              ))}
+              <button
+                onClick={onLoadDemo}
+                className="inline-flex items-center px-4 py-2 text-command-blue-600 dark:text-command-blue-400 text-sm font-medium hover:text-command-blue-700 dark:hover:text-command-blue-300"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                View Demo
+              </button>
+              <button
+                onClick={onGetStarted}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-command-blue-600 to-command-blue-700 text-white text-sm font-semibold rounded-lg hover:from-command-blue-700 hover:to-command-blue-800 transition-all"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="py-20 bg-white dark:bg-gray-800">
+      {/* Main Features Section - Matching Wireframe Layout */}
+      <div className="py-16 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-outfit font-bold text-gray-900 dark:text-white mb-4">
-              Asset Management Features
+          {/* Header */}
+          <div className="mb-12">
+            <h2 className="text-4xl md:text-5xl font-outfit font-bold text-gray-900 dark:text-white mb-4">
+              Everything You Need for Asset Management
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Features designed to help streamline your cybersecurity operations and improve asset visibility
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
+              Powerful features designed to streamline your cybersecurity operations and ensure comprehensive asset visibility.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Feature Navigation */}
+          {/* Features and Dashboard Grid - Wireframe Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            {/* Left: Feature Cards - Stacked Vertically */}
             <div className="space-y-4">
               {features.map((feature, index) => (
                 <div
                   key={index}
-                  className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ${
-                    activeFeature === index
-                      ? 'bg-gradient-to-r from-command-blue-50 to-action-cyan-50 dark:from-command-blue-900/30 dark:to-action-cyan-900/30 border-2 border-command-blue-200 dark:border-command-blue-700 shadow-lg'
-                      : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 border-transparent'
-                  }`}
-                  onClick={() => setActiveFeature(index)}
+                  className="p-6 rounded-xl border-2 border-command-blue-200 dark:border-command-blue-800 bg-gradient-to-r from-command-blue-50/50 to-action-cyan-50/50 dark:from-command-blue-900/20 dark:to-action-cyan-900/20 hover:shadow-lg transition-all duration-300"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`p-3 rounded-lg ${
-                      activeFeature === index ? 'bg-command-blue-600' : 'bg-gray-400'
-                    } transition-colors duration-300`}>
+                    <div className="p-3 rounded-lg bg-command-blue-600 dark:bg-command-blue-500 flex-shrink-0">
                       <feature.icon className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg font-outfit font-semibold text-gray-900 dark:text-white mb-2">
                         {feature.title}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-3">{feature.description}</p>
-                      <ul className="space-y-1">
+                      <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm">
+                        {feature.description}
+                      </p>
+                      <ul className="space-y-1.5">
                         {feature.benefits.map((benefit, benefitIndex) => (
-                          <li key={benefitIndex} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                          <li key={benefitIndex} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                             {benefit}
                           </li>
                         ))}
@@ -219,8 +177,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
               ))}
             </div>
 
-            {/* Feature Visualization */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
+            {/* Right: Asset Dashboard Preview */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 text-white shadow-2xl">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-outfit font-semibold">Asset Dashboard</h3>
@@ -245,11 +203,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/10 rounded-lg p-3">
                       <div className="text-lg font-bold text-red-400">23</div>
-                      <div className="text-xs opacity-75">Critical</div>
+                      <div className="text-xs opacity-75 mt-1">Critical</div>
                     </div>
                     <div className="bg-white/10 rounded-lg p-3">
                       <div className="text-lg font-bold text-green-400">89%</div>
-                      <div className="text-xs opacity-75">Compliant</div>
+                      <div className="text-xs opacity-75 mt-1">Compliant</div>
                     </div>
                   </div>
                   
@@ -270,77 +228,71 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
         </div>
       </div>
 
-      {/* Quick Start Section */}
-      <div className="py-20 bg-gray-50">
+      {/* Get Started Section */}
+      <div className="py-20 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-outfit font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-outfit font-bold text-gray-900 dark:text-white mb-4">
               Get Started in Minutes
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Follow these simple steps to set up your asset inventory management system
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-4">
+              Follow these simple steps to set up your asset inventory management system.
             </p>
+            {onShowUserManual && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Need help? Check out our{' '}
+                <button
+                  onClick={onShowUserManual}
+                  className="text-command-blue-600 dark:text-command-blue-400 hover:underline font-medium"
+                >
+                  comprehensive User Manual
+                </button>
+                {' '}for detailed guides and tutorials.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {quickStartSteps.map((step, index) => (
-              <div key={index} className="relative">
-                <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-command-blue-600 to-action-cyan-600 text-white rounded-xl font-bold text-lg mb-6">
-                    {step.step}
-                  </div>
-                  <h3 className="text-xl font-outfit font-semibold text-gray-900 mb-4">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    {step.description}
-                  </p>
-                  <button className="text-command-blue-600 font-semibold hover:text-command-blue-700 transition-colors">
-                    {step.action} →
-                  </button>
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
+                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-command-blue-600 to-action-cyan-600 text-white rounded-full font-bold text-lg mb-6">
+                  {step.step}
                 </div>
-                
-                {index < quickStartSteps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                    <ArrowRight className="h-6 w-6 text-gray-400" />
-                  </div>
-                )}
+                <h3 className="text-xl font-outfit font-semibold text-gray-900 dark:text-white mb-4">
+                  {step.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  {step.description}
+                </p>
+                <button 
+                  onClick={index === 0 ? onLoadDemo : index === 2 ? onGetStarted : undefined}
+                  className="text-command-blue-600 dark:text-command-blue-400 font-semibold hover:text-command-blue-700 dark:hover:text-command-blue-300 transition-colors inline-flex items-center"
+                >
+                  {step.action}
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </button>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="py-20 bg-gradient-to-r from-command-blue-600 to-action-cyan-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-outfit font-bold text-white mb-6">
-            Ready to Improve Your Asset Management?
-          </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Explore how CyberSoluce™ Asset Manager by ERMITS can help with your asset inventory management needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={onGetStarted}
-              className="inline-flex items-center px-8 py-4 bg-white text-command-blue-600 text-lg font-semibold rounded-xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              Get Started
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </button>
-            <button
-              onClick={onLoadDemo}
-              className="inline-flex items-center px-8 py-4 bg-transparent text-white text-lg font-semibold rounded-xl border-2 border-white hover:bg-white hover:text-command-blue-600 transform hover:scale-105 transition-all duration-200"
-            >
-              <Play className="h-5 w-5 mr-2" />
-              View Demo
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Footer */}
       <div className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="flex items-center mb-4 md:mb-0">
+              <Shield className="h-8 w-8 text-command-blue-400 mr-3" />
+              <div>
+                <div className="text-xl font-outfit font-bold">ERMITS CyberSoluce®</div>
+                <div className="text-sm text-gray-400">Asset Inventory Management</div>
+              </div>
+            </div>
+            <div className="text-sm text-gray-400">
+              © 2024 ERMITS CyberSoluce®. All rights reserved.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

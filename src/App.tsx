@@ -25,6 +25,11 @@ const App: React.FC = () => {
     setShowStartScreen(false);
   }, []);
 
+  const handleShowUserManual = useCallback(() => {
+    setShowStartScreen(false);
+    // The MainLayout will handle showing the user manual
+  }, []);
+
   const handleShowStartScreen = useCallback(() => {
     setShowStartScreen(true);
   }, []);
@@ -98,6 +103,7 @@ const App: React.FC = () => {
                   onGetStarted={handleGetStarted}
                   onLoadDemo={handleLoadDemo}
                   onShowDemoScenarios={handleShowDemoScenarios}
+                  onShowUserManual={handleShowUserManual}
                 />
               ) : (
                 <AuthGuard 
