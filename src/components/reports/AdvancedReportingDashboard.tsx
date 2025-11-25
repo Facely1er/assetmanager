@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BarChart3, Download, Calendar, Filter, TrendingUp, Shield, AlertTriangle, FileText, Activity } from 'lucide-react';
 import { Report } from '../../types/organization';
 import { reportingService } from '../../services/reportingService';
@@ -18,6 +18,32 @@ import {
 } from '../ChartsWrapper';
 import toast from 'react-hot-toast';
 
+// Helper component for colored dot with dynamic color
+const ChartLegendDot: React.FC<{ color: string }> = ({ color }) => {
+  const dotRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (dotRef.current) {
+      dotRef.current.style.setProperty('--dot-color', color);
+    }
+  }, [color]);
+
+  return <div ref={dotRef} className="chart-legend-dot" />;
+};
+
+// Helper component for progress bar with dynamic width
+const ComplianceProgressBar: React.FC<{ percentage: number }> = ({ percentage }) => {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (barRef.current) {
+      barRef.current.style.setProperty('--progress-percentage', `${percentage}%`);
+    }
+  }, [percentage]);
+
+  return <div ref={barRef} className="compliance-progress-bar" />;
+};
+
 export const AdvancedReportingDashboard: React.FC = () => {
   const { assets, stats } = useAssetInventory();
   const [, setReports] = useState<Report[]>([]);
@@ -25,7 +51,7 @@ export const AdvancedReportingDashboard: React.FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
   const [selectedReport, setSelectedReport] = useState<'overview' | 'compliance' | 'risk' | 'trends'>('overview');
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+  const COLORS: readonly string[] = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'] as const;
 
   useEffect(() => {
     loadReports();
@@ -265,15 +291,16 @@ export const AdvancedReportingDashboard: React.FC = () => {
               </RechartsPieChart>
             </ResponsiveContainer>
             <div className="grid grid-cols-2 gap-4 mt-4">
-              {assetTypeData.map((item, index) => (
-                <div key={item.name} className="flex items-center space-x-2">
-                  <div 
-                    className="chart-legend-dot"
-                    style={{ '--dot-color': COLORS[index % COLORS.length] } as React.CSSProperties}
-                  />
-                  <span className="text-sm text-gray-600">{item.name}: {item.value}</span>
-                </div>
-              ))}
+              {assetTypeData.map((item, index) => {
+                const colorIndex = index % COLORS.length;
+                const color = COLORS[colorIndex] ?? COLORS[0] ?? '#000000';
+                return (
+                  <div key={item.name} className="flex items-center space-x-2">
+                    <ChartLegendDot color={color} />
+                    <span className="text-sm text-gray-600">{item.name}: {item.value}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -331,10 +358,7 @@ export const AdvancedReportingDashboard: React.FC = () => {
                   <span className="text-2xl font-bold text-green-600">{item.percentage}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="compliance-progress-bar"
-                    style={{ '--progress-percentage': `${item.percentage}%` } as React.CSSProperties}
-                  />
+                  <ComplianceProgressBar percentage={item.percentage} />
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
                   {item.covered} of {item.total} assets covered
