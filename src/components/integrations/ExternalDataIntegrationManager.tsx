@@ -5,19 +5,25 @@ import {
   EnrichmentRule,
   IntegrationResult 
 } from '../../services/externalDataIntegrationService';
-import { Asset } from '../../types/asset';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
+import { logger } from '../../utils/logger';
 
 interface ExternalDataIntegrationManagerProps {
   onClose: () => void;
 }
 
 export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationManagerProps> = ({ onClose }) => {
-  const { assets, loading } = useAssetInventory();
+  const { loading } = useAssetInventory();
   const [activeTab, setActiveTab] = useState<'sources' | 'rules' | 'status'>('sources');
   const [sources, setSources] = useState<ExternalDataSource[]>([]);
   const [rules, setRules] = useState<EnrichmentRule[]>([]);
-  const [integrationStatus, setIntegrationStatus] = useState<any>(null);
+  const [integrationStatus, setIntegrationStatus] = useState<{
+    totalSources: number;
+    activeSources: number;
+    lastSync: Date | null;
+    nextSync: Date | null;
+    syncErrors: number;
+  } | null>(null);
   const [showCreateSource, setShowCreateSource] = useState(false);
   const [showCreateRule, setShowCreateRule] = useState(false);
   const [editingSource, setEditingSource] = useState<ExternalDataSource | null>(null);
@@ -41,7 +47,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
       setRules(rulesData);
       setIntegrationStatus(statusData);
     } catch (error) {
-      console.error('Error loading integration data:', error);
+      logger.error('Error loading integration data', error instanceof Error ? error : undefined);
     }
   };
 
@@ -51,7 +57,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
       setSources(prev => [...prev, newSource]);
       setShowCreateSource(false);
     } catch (error) {
-      console.error('Error creating data source:', error);
+      logger.error('Error creating data source', error instanceof Error ? error : undefined);
     }
   };
 
@@ -63,7 +69,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
         setEditingSource(null);
       }
     } catch (error) {
-      console.error('Error updating data source:', error);
+      logger.error('Error updating data source', error instanceof Error ? error : undefined);
     }
   };
 
@@ -74,7 +80,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
         setSources(prev => prev.filter(s => s.id !== id));
       }
     } catch (error) {
-      console.error('Error deleting data source:', error);
+      logger.error('Error deleting data source', error instanceof Error ? error : undefined);
     }
   };
 
@@ -83,9 +89,9 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
     try {
       const result = await externalDataIntegrationService.testDataSourceConnection(sourceId);
       // Show result in UI (could be a toast notification)
-      console.log('Connection test result:', result);
+      logger.debug('Connection test result:', result);
     } catch (error) {
-      console.error('Error testing connection:', error);
+      logger.error('Error testing connection', error instanceof Error ? error : undefined);
     } finally {
       setTestingConnection(null);
     }
@@ -96,7 +102,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
       const result = await externalDataIntegrationService.syncDataSource(sourceId);
       setSyncResults(prev => new Map(prev.set(sourceId, result)));
     } catch (error) {
-      console.error('Error syncing data source:', error);
+      logger.error('Error syncing data source', error instanceof Error ? error : undefined);
     }
   };
 
@@ -106,7 +112,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
       setRules(prev => [...prev, newRule]);
       setShowCreateRule(false);
     } catch (error) {
-      console.error('Error creating enrichment rule:', error);
+      logger.error('Error creating enrichment rule', error instanceof Error ? error : undefined);
     }
   };
 
@@ -118,7 +124,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
         setEditingRule(null);
       }
     } catch (error) {
-      console.error('Error updating enrichment rule:', error);
+      logger.error('Error updating enrichment rule', error instanceof Error ? error : undefined);
     }
   };
 
@@ -129,7 +135,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
         setRules(prev => prev.filter(r => r.id !== id));
       }
     } catch (error) {
-      console.error('Error deleting enrichment rule:', error);
+      logger.error('Error deleting enrichment rule', error instanceof Error ? error : undefined);
     }
   };
 
@@ -175,6 +181,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
+            aria-label="Close modal"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -191,7 +198,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'sources' | 'rules' | 'status')}
               className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
@@ -312,7 +319,7 @@ export const ExternalDataIntegrationManager: React.FC<ExternalDataIntegrationMan
                         <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                           <span>Source: {rule.source}</span>
                           <span>Target: {rule.targetField}</span>
-                          <span>Condition: {rule.condition.field} {rule.condition.operator} {rule.condition.value}</span>
+                          <span>Condition: {rule.condition.field} {rule.condition.operator} {String(rule.condition.value)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -435,13 +442,21 @@ interface CreateSourceModalProps {
 const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'vulnerability' as const,
+    type: 'vulnerability' as ExternalDataSource['type'],
     description: '',
     baseUrl: '',
     apiKey: '',
     isActive: true,
-    syncFrequency: 'daily' as const,
-    config: {} as Record<string, any>
+    syncFrequency: 'daily' as ExternalDataSource['syncFrequency'],
+    config: {} as Record<string, unknown>,
+    metadata: {
+      version: '1.0',
+      supportedFeatures: [] as string[],
+      rateLimit: {
+        requests: 100,
+        period: 'hour' as const
+      }
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -454,7 +469,7 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Add Data Source</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -469,6 +484,7 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter data source name"
               required
             />
           </div>
@@ -477,8 +493,9 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
             <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as ExternalDataSource['type'] }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Data source type"
             >
               <option value="vulnerability">Vulnerability</option>
               <option value="threat_intelligence">Threat Intelligence</option>
@@ -495,6 +512,7 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter description"
               rows={3}
             />
           </div>
@@ -506,6 +524,7 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
               value={formData.baseUrl}
               onChange={(e) => setFormData(prev => ({ ...prev, baseUrl: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="https://api.example.com"
               required
             />
           </div>
@@ -517,6 +536,7 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
               value={formData.apiKey}
               onChange={(e) => setFormData(prev => ({ ...prev, apiKey: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter API key (optional)"
             />
           </div>
 
@@ -525,8 +545,9 @@ const CreateSourceModal: React.FC<CreateSourceModalProps> = ({ onClose, onSave }
               <label className="block text-sm font-medium text-gray-700 mb-1">Sync Frequency</label>
               <select
                 value={formData.syncFrequency}
-                onChange={(e) => setFormData(prev => ({ ...prev, syncFrequency: e.target.value as any }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, syncFrequency: e.target.value as ExternalDataSource['syncFrequency'] }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Sync frequency"
               >
                 <option value="realtime">Real-time</option>
                 <option value="hourly">Hourly</option>
@@ -598,7 +619,7 @@ const EditSourceModal: React.FC<EditSourceModalProps> = ({ source, onClose, onSa
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Edit Data Source</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -613,6 +634,7 @@ const EditSourceModal: React.FC<EditSourceModalProps> = ({ source, onClose, onSa
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter data source name"
               required
             />
           </div>
@@ -623,6 +645,7 @@ const EditSourceModal: React.FC<EditSourceModalProps> = ({ source, onClose, onSa
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter description"
               rows={3}
             />
           </div>
@@ -634,6 +657,7 @@ const EditSourceModal: React.FC<EditSourceModalProps> = ({ source, onClose, onSa
               value={formData.baseUrl}
               onChange={(e) => setFormData(prev => ({ ...prev, baseUrl: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="https://api.example.com"
               required
             />
           </div>
@@ -645,6 +669,7 @@ const EditSourceModal: React.FC<EditSourceModalProps> = ({ source, onClose, onSa
               value={formData.apiKey}
               onChange={(e) => setFormData(prev => ({ ...prev, apiKey: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter API key (optional)"
             />
           </div>
 
@@ -653,8 +678,9 @@ const EditSourceModal: React.FC<EditSourceModalProps> = ({ source, onClose, onSa
               <label className="block text-sm font-medium text-gray-700 mb-1">Sync Frequency</label>
               <select
                 value={formData.syncFrequency}
-                onChange={(e) => setFormData(prev => ({ ...prev, syncFrequency: e.target.value as any }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, syncFrequency: e.target.value as ExternalDataSource['syncFrequency'] }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Sync frequency"
               >
                 <option value="realtime">Real-time</option>
                 <option value="hourly">Hourly</option>
@@ -706,18 +732,34 @@ interface CreateRuleModalProps {
 }
 
 const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onSave }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    source: string;
+    targetField: string;
+    condition: {
+      field: string;
+      operator: EnrichmentRule['condition']['operator'];
+      value: string;
+    };
+    transformation: {
+      type: 'direct' | 'mapping' | 'calculation' | 'lookup';
+      config: Record<string, unknown>;
+    };
+    isActive: boolean;
+    priority: number;
+  }>({
     name: '',
     description: '',
     source: '',
     targetField: '',
     condition: {
       field: '',
-      operator: 'equals' as const,
+      operator: 'equals',
       value: ''
     },
     transformation: {
-      type: 'direct' as const,
+      type: 'direct',
       config: {}
     },
     isActive: true,
@@ -734,7 +776,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Add Enrichment Rule</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -749,6 +791,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter data source name"
               required
             />
           </div>
@@ -759,6 +802,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter description"
               rows={3}
             />
           </div>
@@ -770,6 +814,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
                 value={formData.source}
                 onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Data source"
                 required
               >
                 <option value="">Select source</option>
@@ -786,6 +831,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
                 value={formData.targetField}
                 onChange={(e) => setFormData(prev => ({ ...prev, targetField: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., vulnerabilities"
                 required
               />
             </div>
@@ -802,6 +848,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
                   condition: { ...prev.condition, field: e.target.value }
                 }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., type"
                 required
               />
             </div>
@@ -812,9 +859,10 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
                 value={formData.condition.operator}
                 onChange={(e) => setFormData(prev => ({ 
                   ...prev, 
-                  condition: { ...prev.condition, operator: e.target.value as any }
+                  condition: { ...prev.condition, operator: e.target.value as EnrichmentRule['condition']['operator'] }
                 }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Condition operator"
               >
                 <option value="equals">Equals</option>
                 <option value="contains">Contains</option>
@@ -830,12 +878,13 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
               <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
               <input
                 type="text"
-                value={formData.condition.value}
+                value={String(formData.condition.value)}
                 onChange={(e) => setFormData(prev => ({ 
                   ...prev, 
                   condition: { ...prev.condition, value: e.target.value }
                 }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., server"
                 required
               />
             </div>
@@ -849,6 +898,7 @@ const CreateRuleModal: React.FC<CreateRuleModalProps> = ({ sources, onClose, onS
                 value={formData.priority}
                 onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="1-10"
                 min="1"
                 max="10"
               />
@@ -919,7 +969,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Edit Enrichment Rule</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -934,6 +984,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter data source name"
               required
             />
           </div>
@@ -944,6 +995,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter description"
               rows={3}
             />
           </div>
@@ -955,6 +1007,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
                 value={formData.source}
                 onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Data source"
                 required
               >
                 {sources.map(source => (
@@ -970,6 +1023,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
                 value={formData.targetField}
                 onChange={(e) => setFormData(prev => ({ ...prev, targetField: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., vulnerabilities"
                 required
               />
             </div>
@@ -986,6 +1040,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
                   condition: { ...prev.condition, field: e.target.value }
                 }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., type"
                 required
               />
             </div>
@@ -996,9 +1051,10 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
                 value={formData.condition.operator}
                 onChange={(e) => setFormData(prev => ({ 
                   ...prev, 
-                  condition: { ...prev.condition, operator: e.target.value as any }
+                  condition: { ...prev.condition, operator: e.target.value as EnrichmentRule['condition']['operator'] }
                 }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Condition operator"
               >
                 <option value="equals">Equals</option>
                 <option value="contains">Contains</option>
@@ -1014,12 +1070,13 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
               <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
               <input
                 type="text"
-                value={formData.condition.value}
+                value={String(formData.condition.value)}
                 onChange={(e) => setFormData(prev => ({ 
                   ...prev, 
                   condition: { ...prev.condition, value: e.target.value }
                 }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., server"
                 required
               />
             </div>
@@ -1033,6 +1090,7 @@ const EditRuleModal: React.FC<EditRuleModalProps> = ({ rule, sources, onClose, o
                 value={formData.priority}
                 onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="1-10"
                 min="1"
                 max="10"
               />

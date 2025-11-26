@@ -4,6 +4,7 @@ import { INVENTORY_SCENARIOS, generateAssetInventory } from '../data/assetGenera
 import { Asset } from '../types/asset';
 import { exportToCSV } from '../utils/assetUtils';
 import { toast } from 'react-hot-toast';
+import { logger } from '../utils/logger';
 
 interface InventoryGeneratorProps {
   onInventoryGenerated: (assets: Asset[], scenarioName: string) => void;
@@ -40,7 +41,7 @@ export const InventoryGenerator: React.FC<InventoryGeneratorProps> = ({
       toast.success(`Generated ${assets.length} assets for ${scenario?.name}`);
     } catch (error) {
       toast.error('Failed to generate inventory');
-      console.error('Generation error:', error);
+      logger.error('Generation error', error instanceof Error ? error : undefined);
     } finally {
       setIsGenerating(false);
     }

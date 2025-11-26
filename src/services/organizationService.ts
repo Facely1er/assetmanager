@@ -1,27 +1,50 @@
 import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabase';
 import { Organization, OrganizationMember, Invitation, AuditLog } from '../types/organization';
 import { logError } from '../utils/errorHandling';
+import { withFallback, isServiceAvailable } from '../utils/serviceFallback';
 
 type InvitationRole = Invitation['role'];
+
+// Demo fallback data
+const getDemoOrganizations = (): Organization[] => [
+  {
+    id: 'demo-org-1',
+    name: 'Demo Organization',
+    slug: 'demo-org',
+    description: 'Sample organization for demonstration',
+    logo_url: null,
+    settings: {},
+    plan: 'pro',
+    created_at: new Date(),
+    updated_at: new Date(),
+    created_by: 'demo-user'
+  }
+];
 
 export const organizationService = {
   // Get user's organizations
   async getUserOrganizations(): Promise<Organization[]> {
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select(`
-          *,
-          organization_members!inner(role)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw new Error(handleSupabaseError(error));
-      return data || [];
-    } catch (error) {
-      logError(error, 'organizationService.getUserOrganizations');
-      throw error;
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      return getDemoOrganizations();
     }
+
+    return withFallback(
+      async () => {
+        const { data, error } = await supabase!
+          .from('organizations')
+          .select(`
+            *,
+            organization_members!inner(role)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw new Error(handleSupabaseError(error));
+        return data || [];
+      },
+      getDemoOrganizations,
+      'organizationService.getUserOrganizations',
+      { throwOnError: false }
+    );
   },
 
   // Create organization
@@ -30,6 +53,10 @@ export const organizationService = {
     slug: string;
     description?: string;
   }): Promise<Organization> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      throw new Error('Organization creation not available in demo mode');
+    }
+
     try {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('User not authenticated');
@@ -74,24 +101,45 @@ export const organizationService = {
 
   // Update organization
   async updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization> {
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw new Error(handleSupabaseError(error));
-      return data;
-    } catch (error) {
-      logError(error, 'organizationService.updateOrganization');
-      throw error;
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      // In demo mode, return updated demo organization
+      const demoOrg = getDemoOrganizations().find(org => org.id === id);
+      if (demoOrg) {
+        return { ...demoOrg, ...updates, updated_at: new Date() } as Organization;
+      }
+      throw new Error('Organization not found');
     }
+
+    return withFallback(
+      async () => {
+        const { data, error } = await supabase!
+          .from('organizations')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw new Error(handleSupabaseError(error));
+        return data;
+      },
+      () => {
+        const demoOrg = getDemoOrganizations().find(org => org.id === id);
+        if (demoOrg) {
+          return { ...demoOrg, ...updates, updated_at: new Date() } as Organization;
+        }
+        throw new Error('Organization not found and service unavailable');
+      },
+      'organizationService.updateOrganization',
+      { throwOnError: true }
+    );
   },
 
   // Get organization members
   async getOrganizationMembers(organizationId: string): Promise<OrganizationMember[]> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      return [];
+    }
+
     try {
       const { data, error } = await supabase
         .from('organization_members')
@@ -112,7 +160,7 @@ export const organizationService = {
 
   // Invite user to organization
   async inviteUser(organizationId: string, email: string, role: string): Promise<Invitation> {
-    if (!isSupabaseEnabled || !supabase) {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
       // Demo mode - return mock invitation
       return Promise.resolve({
         id: `demo-invite-${Date.now()}`,
@@ -156,7 +204,7 @@ export const organizationService = {
   },
 
   async inviteMember(invitation: Partial<Invitation>): Promise<Invitation> {
-    if (!isSupabaseEnabled || !supabase) {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
       throw new Error('Team features not available in demo mode');
     }
 
@@ -180,6 +228,10 @@ export const organizationService = {
 
   // Accept invitation
   async acceptInvitation(token: string): Promise<void> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      throw new Error('Team features not available in demo mode');
+    }
+
     try {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('User not authenticated');
@@ -189,7 +241,7 @@ export const organizationService = {
         .from('invitations')
         .select('*')
         .eq('token', token)
-        .eq('email', user.data.user.email)
+        .eq('email', user.data.user.email || '')
         .is('accepted_at', null)
         .gte('expires_at', new Date().toISOString())
         .single();
@@ -223,6 +275,10 @@ export const organizationService = {
 
   // Update member role
   async updateMemberRole(organizationId: string, userId: string, role: string): Promise<void> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      throw new Error('Team features not available in demo mode');
+    }
+
     try {
       const { error } = await supabase
         .from('organization_members')
@@ -239,6 +295,10 @@ export const organizationService = {
 
   // Remove member
   async removeMember(organizationId: string, userId: string): Promise<void> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      throw new Error('Team features not available in demo mode');
+    }
+
     try {
       const { error } = await supabase
         .from('organization_members')
@@ -255,6 +315,10 @@ export const organizationService = {
 
   // Get audit logs
   async getAuditLogs(organizationId: string, limit = 100): Promise<AuditLog[]> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      return [];
+    }
+
     try {
       const { data, error } = await supabase
         .from('audit_logs')
@@ -276,6 +340,10 @@ export const organizationService = {
 
   // Switch current organization
   async switchOrganization(organizationId: string): Promise<void> {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
+      throw new Error('Organization switching not available in demo mode');
+    }
+
     try {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('User not authenticated');

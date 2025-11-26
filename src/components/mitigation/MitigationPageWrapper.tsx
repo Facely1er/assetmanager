@@ -6,6 +6,7 @@ import { MitigationAction } from '../../types/mitigation';
 import { Risk } from '../../types/risk';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { logger } from '../../utils/logger';
 
 export const MitigationPageWrapper: React.FC = () => {
   const { assets } = useAssetInventory();
@@ -27,7 +28,7 @@ export const MitigationPageWrapper: React.FC = () => {
       setMitigationActions(actions);
       setRisks(risksData);
     } catch (error) {
-      console.error('Failed to load mitigation data:', error);
+      logger.error('Failed to load mitigation data', error instanceof Error ? error : undefined);
     } finally {
       setLoading(false);
     }
@@ -40,7 +41,7 @@ export const MitigationPageWrapper: React.FC = () => {
         setMitigationActions([...mitigationActions, created]);
       }
     } catch (error) {
-      console.error('Failed to add mitigation action:', error);
+      logger.error('Failed to add mitigation action', error instanceof Error ? error : undefined);
     }
   };
 
@@ -51,7 +52,7 @@ export const MitigationPageWrapper: React.FC = () => {
         setMitigationActions(mitigationActions.map(a => a.id === action.id ? updated : a));
       }
     } catch (error) {
-      console.error('Failed to update mitigation action:', error);
+      logger.error('Failed to update mitigation action', error instanceof Error ? error : undefined);
     }
   };
 

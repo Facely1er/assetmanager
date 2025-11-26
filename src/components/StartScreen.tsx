@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { 
   Shield, 
   ArrowRight, 
@@ -32,7 +33,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
     try {
       onGetStarted();
     } catch (error) {
-      console.error('Error starting application:', error);
+      logger.error('Error starting application', error instanceof Error ? error : undefined);
     }
   };
 
@@ -40,7 +41,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onGetStarted, onLoadDe
     try {
       onLoadDemo();
     } catch (error) {
-      console.error('Error loading demo:', error);
+      logger.error('Error loading demo', error instanceof Error ? error : undefined);
     }
   };
 

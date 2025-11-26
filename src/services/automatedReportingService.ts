@@ -4,6 +4,7 @@ import { AnalyticsInsights } from './analyticsService';
 import { dataEnrichmentService } from './dataEnrichmentService';
 import { analyticsService } from './analyticsService';
 import { logError } from '../utils/errorHandling';
+import { logger } from '../utils/logger';
 
 export interface ReportSchedule {
   id: string;
@@ -612,9 +613,7 @@ class AutomatedReportingService {
   private async executeScheduledReport(schedule: ReportSchedule) {
     // This would be called by the scheduler to execute a scheduled report
     // It would load the current asset data, enrich it, generate analytics, and create the report
-    if (import.meta.env.DEV) {
-      console.log(`Executing scheduled report: ${schedule.name}`);
-    }
+    logger.debug(`Executing scheduled report: ${schedule.name}`);
   }
 
   getReports(): GeneratedReport[] {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Users, MapPin, Tag, Shield, AlertCircle } from 'lucide-react';
 import { Asset } from '../types/asset';
 import { criticalityLevels, statusOptions } from '../data/sampleAssets';
+import { logger } from '../utils/logger';
 
 interface BulkEditModalProps {
   isOpen: boolean;
@@ -46,7 +47,7 @@ export const BulkEditModal: React.FC<BulkEditModalProps> = ({
       setUpdates({});
       setFieldsToUpdate(new Set());
     } catch (error) {
-      console.error('Error saving bulk updates:', error);
+      logger.error('Error saving bulk updates', error instanceof Error ? error : undefined);
     } finally {
       setIsSubmitting(false);
     }

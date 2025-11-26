@@ -11,6 +11,7 @@ import {
   Minimize2,
   Settings
 } from 'lucide-react';
+import { logger } from '../utils/logger';
 import {
   BarChart,
   Bar,
@@ -91,7 +92,7 @@ export const AdvancedDataVisualization: React.FC<AdvancedDataVisualizationProps>
       const insights = await analyticsService.generateAnalytics(assets, enriched);
       setAnalyticsInsights(insights);
     } catch (error) {
-      console.error('Error loading visualization data:', error);
+      logger.error('Error loading visualization data', error instanceof Error ? error : undefined);
     }
   }, [assets]);
 

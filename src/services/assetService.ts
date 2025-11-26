@@ -5,6 +5,7 @@ import { Database } from '../types/database';
 import { sampleAssets } from '../data/sampleAssets';
 import { logError } from '../utils/errorHandling';
 import { APP_CONFIG } from '../utils/constants';
+import { withFallback, isServiceAvailable } from '../utils/serviceFallback';
 
 type AssetRow = Database['public']['Tables']['assets']['Row'];
 type AssetInsert = Database['public']['Tables']['assets']['Insert'];
@@ -152,45 +153,36 @@ const mapAssetToUpdate = (asset: Partial<Asset>): AssetUpdate => ({
 export const assetService = {
   // Get all assets for the current user
   async getAssets(): Promise<Asset[]> {
-    if (!isSupabaseEnabled || !supabase) {
+    if (!isSupabaseEnabled || !supabase || !isServiceAvailable()) {
       return sampleAssets;
     }
     
-    try {
-      const { checkSupabaseConnectivity } = await import('../lib/supabase');
-      const isConnected = await checkSupabaseConnectivity();
-      
-      if (!isConnected) {
-        return sampleAssets;
-      }
-      
-      const { data, error } = await supabase
-        .from('assets')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1000);
-      
-      if (error) {
-        logError(error, 'assetService.getAssets');
-        return sampleAssets;
-      }
+    return withFallback(
+      async () => {
+        const { checkSupabaseConnectivity } = await import('../lib/supabase');
+        const isConnected = await checkSupabaseConnectivity();
+        
+        if (!isConnected) {
+          throw new Error('Database connection unavailable');
+        }
+        
+        const { data, error } = await supabase!
+          .from('assets')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(1000);
+        
+        if (error) {
+          throw new Error(handleSupabaseError(error));
+        }
 
-      const assets = await Promise.all((data || []).map(row => mapRowToAsset(row)));
-      return assets;
-      
-    } catch (error) {
-      if (error instanceof Error && (
-        error.message.includes('fetch') || 
-        error.message.includes('network') ||
-        error.message.includes('Failed to fetch') ||
-        error.message.includes('NetworkError') ||
-        error.name === 'TypeError'
-      )) {
-        return sampleAssets;
-      }
-      
-      return sampleAssets;
-    }
+        const assets = await Promise.all((data || []).map(row => mapRowToAsset(row)));
+        return assets;
+      },
+      sampleAssets,
+      'assetService.getAssets',
+      { throwOnError: false, maxRetries: 2 }
+    );
   },
 
   // Get a single asset by ID

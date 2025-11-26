@@ -1,8 +1,21 @@
 # CyberSoluce AssetManager - Production Deployment Script
 # PowerShell script for Windows to deploy to production
 
+# Ensure script runs from project root directory
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location $scriptPath
+
+# Verify we're in the correct directory
+if (-not (Test-Path "package.json")) {
+    Write-Host "❌ Error: package.json not found. Please run this script from the project root directory." -ForegroundColor Red
+    Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Yellow
+    Write-Host "   Expected directory: $scriptPath" -ForegroundColor Yellow
+    exit 1
+}
+
 Write-Host "🚀 CyberSoluce AssetManager - Production Deployment" -ForegroundColor Cyan
 Write-Host "=" * 60 -ForegroundColor Cyan
+Write-Host "📁 Working directory: $(Get-Location)" -ForegroundColor Gray
 Write-Host ""
 
 # Check if .env.local exists

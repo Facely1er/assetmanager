@@ -4,6 +4,7 @@ import { nistService } from '../../services/nistService';
 import { NISTControl, NISTMapping, NISTAssessment } from '../../types/nist';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { logger } from '../../utils/logger';
 
 export const NISTPageWrapper: React.FC = () => {
   const { assets } = useAssetInventory();
@@ -75,7 +76,7 @@ export const NISTPageWrapper: React.FC = () => {
         setAssessment(defaultAssessment);
       }
     } catch (error) {
-      console.error('Failed to load NIST data:', error);
+      logger.error('Failed to load NIST data', error instanceof Error ? error : undefined);
     } finally {
       setLoading(false);
     }

@@ -4,6 +4,9 @@ import { DashboardHome } from './DashboardHome';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { useAssetInventory } from '../contexts/AssetInventoryContext';
+import { generateDemoDataPackage } from '../data/demoDataGenerator';
+import toast from 'react-hot-toast';
+import { logger } from '../utils/logger';
 
 // Lazy load components for better performance
 const AssetInventoryDashboard = lazy(() => import('./AssetInventoryDashboard'));
@@ -35,7 +38,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen, initi
   const [activeView, setActiveView] = useState(initialView);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user, signOut } = useAuth();
-  const { stats } = useAssetInventory();
+  const { stats, replaceAssets } = useAssetInventory();
 
   const handleNavigateToAssets = useCallback(() => {
     setActiveView('assets');
@@ -61,11 +64,32 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ onShowStartScreen, initi
     setActiveView('users');
   }, []);
 
-  const handleStartDemo = React.useCallback((scenarioId: string) => {
-    // Load demo scenario and navigate to assets view
-    setActiveView('assets');
-    // TODO: Implement demo scenario loading
-  }, []);
+  const handleStartDemo = React.useCallback(async (scenarioId: string) => {
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading('Loading demo scenario...');
+      
+      // Generate demo data package
+      const demoPackage = generateDemoDataPackage(scenarioId);
+      
+      // Replace current assets with demo assets
+      replaceAssets(demoPackage.assets);
+      
+      // Navigate to assets view
+      setActiveView('assets');
+      
+      // Show success message with scenario details
+      toast.dismiss(loadingToast);
+      toast.success(
+        `Demo scenario "${demoPackage.scenario.name}" loaded successfully! ` +
+        `(${demoPackage.metadata.assetCount} assets, ${demoPackage.metadata.vulnerabilityCount} vulnerabilities)`,
+        { duration: 5000 }
+      );
+    } catch (error) {
+      logger.error('Error loading demo scenario', error instanceof Error ? error : undefined);
+      toast.error(`Failed to load demo scenario: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [replaceAssets]);
 
   const handleViewDemo = React.useCallback((scenarioId: string) => {
     // Show demo details

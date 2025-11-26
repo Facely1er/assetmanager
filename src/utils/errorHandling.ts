@@ -1,4 +1,5 @@
-import { APP_CONFIG, ERROR_MESSAGES } from './constants';
+import { APP_CONFIG, ERROR_MESSAGES, FEATURE_FLAGS } from './constants';
+import { logger } from './logger';
 
 // Enhanced error logging with context
 export const logError = (error: unknown, context: string, metadata?: Record<string, unknown>) => {
@@ -12,13 +13,12 @@ export const logError = (error: unknown, context: string, metadata?: Record<stri
     url: window.location.href,
   };
 
-  // Log to console in development
-  if (import.meta.env.DEV) {
-    console.error(`[${context}]`, errorInfo);
-  }
+  // Use logger utility for consistent error logging
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  logger.error(`[${context}] ${errorMessage}`, error instanceof Error ? error : undefined, errorInfo);
 
   // In production, you might want to send to an error reporting service
-  if (import.meta.env.PROD && APP_CONFIG.FEATURE_FLAGS.ENABLE_ERROR_REPORTING) {
+  if (import.meta.env.PROD && FEATURE_FLAGS.ENABLE_ERROR_REPORTING) {
     // Example: Send to error reporting service
     // errorReportingService.captureException(error, { extra: errorInfo });
   }

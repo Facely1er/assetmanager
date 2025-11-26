@@ -1,6 +1,8 @@
 import { Asset } from '../types/asset';
 import { EnrichmentData } from './dataEnrichmentService';
 import { logError } from '../utils/errorHandling';
+import { isServiceAvailable } from '../utils/serviceFallback';
+import { logger } from '../utils/logger';
 
 export interface ExternalDataSource {
   id: string;
@@ -12,7 +14,7 @@ export interface ExternalDataSource {
   isActive: boolean;
   lastSync?: Date;
   syncFrequency: 'realtime' | 'hourly' | 'daily' | 'weekly';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   metadata: {
     version: string;
     supportedFeatures: string[];
@@ -92,7 +94,7 @@ export interface AssetDiscoveryData {
   confidence: number; // 0-100
   isNew: boolean;
   isChanged: boolean;
-  changes: Record<string, any>;
+  changes: Record<string, unknown>;
 }
 
 export interface CostAnalysisData {
@@ -147,12 +149,12 @@ export interface EnrichmentRule {
   condition: {
     field: string;
     operator: 'equals' | 'contains' | 'starts_with' | 'ends_with' | 'regex' | 'in' | 'not_in';
-    value: any;
+    value: unknown;
   };
-  transformation: {
-    type: 'direct' | 'mapping' | 'calculation' | 'lookup';
-    config: any;
-  };
+    transformation: {
+      type: 'direct' | 'mapping' | 'calculation' | 'lookup';
+      config: Record<string, unknown>;
+    };
   isActive: boolean;
   priority: number;
   createdAt: Date;
@@ -221,7 +223,7 @@ class ExternalDataIntegrationService {
         description: 'Center for Internet Security Controls',
         baseUrl: 'https://api.cisecurity.org',
         isActive: true,
-        syncFrequency: 'monthly',
+        syncFrequency: 'weekly',
         config: {
           version: '8.0',
           includeImplementation: true
@@ -240,7 +242,7 @@ class ExternalDataIntegrationService {
         name: 'Nmap Network Scanner',
         type: 'asset_discovery',
         description: 'Network discovery and port scanning',
-        baseUrl: import.meta.env.VITE_NMAP_SCANNER_URL || 'http://localhost:8080/api',
+        baseUrl: import.meta.env['VITE_NMAP_SCANNER_URL'] || 'http://localhost:8080/api',
         isActive: false,
         syncFrequency: 'daily',
         config: {
@@ -284,7 +286,7 @@ class ExternalDataIntegrationService {
         name: 'Prometheus Monitoring',
         type: 'performance_monitoring',
         description: 'System and application performance metrics',
-        baseUrl: import.meta.env.VITE_PROMETHEUS_URL || 'http://localhost:9090/api/v1',
+        baseUrl: import.meta.env['VITE_PROMETHEUS_URL'] || 'http://localhost:9090/api/v1',
         isActive: false,
         syncFrequency: 'realtime',
         config: {
@@ -491,8 +493,14 @@ class ExternalDataIntegrationService {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(error instanceof Error ? error.message : 'Unknown error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      result.errors.push(errorMessage);
       logError(error, 'ExternalDataIntegrationService.syncDataSource', { sourceId: id });
+      
+      // If network/service unavailable, mark as failed but don't throw
+      if (!isServiceAvailable() || errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        result.warnings.push('External service unavailable. Data sync skipped. Will retry when service is available.');
+      }
     }
 
     return result;
@@ -500,9 +508,7 @@ class ExternalDataIntegrationService {
 
   private async syncVulnerabilityData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the NVD API
-    if (import.meta.env.DEV) {
-      console.log(`Syncing vulnerability data from ${source.name}`);
-    }
+    logger.debug(`Syncing vulnerability data from ${source.name}`);
 
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -526,16 +532,12 @@ class ExternalDataIntegrationService {
     ];
 
     // Store vulnerabilities (in real implementation, this would be stored in database)
-    if (import.meta.env.DEV) {
-      console.log(`Synced ${mockVulnerabilities.length} vulnerabilities`);
-    }
+    logger.debug(`Synced ${mockVulnerabilities.length} vulnerabilities`);
   }
 
   private async syncThreatIntelligenceData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the MITRE ATT&CK API
-    if (import.meta.env.DEV) {
-      console.log(`Syncing threat intelligence data from ${source.name}`);
-    }
+    logger.debug(`Syncing threat intelligence data from ${source.name}`);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -561,16 +563,12 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    if (import.meta.env.DEV) {
-      console.log(`Synced ${mockThreats.length} threat intelligence entries`);
-    }
+    logger.debug(`Synced ${mockThreats.length} threat intelligence entries`);
   }
 
   private async syncComplianceData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the CIS Controls API
-    if (import.meta.env.DEV) {
-      console.log(`Syncing compliance data from ${source.name}`);
-    }
+    logger.debug(`Syncing compliance data from ${source.name}`);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -592,16 +590,12 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    if (import.meta.env.DEV) {
-      console.log(`Synced ${mockCompliance.length} compliance controls`);
-    }
+    logger.debug(`Synced ${mockCompliance.length} compliance controls`);
   }
 
   private async syncAssetDiscoveryData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the Nmap scanner API
-    if (import.meta.env.DEV) {
-      console.log(`Syncing asset discovery data from ${source.name}`);
-    }
+    logger.debug(`Syncing asset discovery data from ${source.name}`);
 
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -627,16 +621,12 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    if (import.meta.env.DEV) {
-      console.log(`Synced ${mockAssets.length} discovered assets`);
-    }
+    logger.debug(`Synced ${mockAssets.length} discovered assets`);
   }
 
   private async syncCostAnalysisData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the AWS Cost Explorer API
-    if (import.meta.env.DEV) {
-      console.log(`Syncing cost analysis data from ${source.name}`);
-    }
+    logger.debug(`Syncing cost analysis data from ${source.name}`);
 
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -656,16 +646,12 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    if (import.meta.env.DEV) {
-      console.log(`Synced ${mockCosts.length} cost records`);
-    }
+    logger.debug(`Synced ${mockCosts.length} cost records`);
   }
 
   private async syncPerformanceMonitoringData(source: ExternalDataSource): Promise<void> {
     // Mock implementation - in real scenario, this would call the Prometheus API
-    if (import.meta.env.DEV) {
-      console.log(`Syncing performance monitoring data from ${source.name}`);
-    }
+    logger.debug(`Syncing performance monitoring data from ${source.name}`);
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -686,9 +672,7 @@ class ExternalDataIntegrationService {
       }
     ];
 
-    if (import.meta.env.DEV) {
-      console.log(`Synced ${mockMetrics.length} performance metrics`);
-    }
+    logger.debug(`Synced ${mockMetrics.length} performance metrics`);
   }
 
   private async getDataCount(type: string): Promise<number> {
@@ -707,7 +691,6 @@ class ExternalDataIntegrationService {
 
   private calculateNextSync(source: ExternalDataSource): Date {
     const now = new Date();
-    const nextSync = new Date(now);
 
     switch (source.syncFrequency) {
       case 'realtime':
@@ -781,23 +764,22 @@ class ExternalDataIntegrationService {
 
   private async enrichAsset(asset: Asset): Promise<EnrichmentData> {
     const enriched: EnrichmentData = {
-      assetId: asset.id,
-      enrichedAt: new Date(),
       riskInsights: {
-        riskScore: asset.riskScore,
+        overallRiskLevel: asset.riskScore >= 80 ? 'Critical' : asset.riskScore >= 60 ? 'High' : asset.riskScore >= 40 ? 'Medium' : 'Low',
         riskFactors: [],
-        riskTrend: 'stable',
-        lastAssessed: new Date()
+        riskTrend: 'Stable',
+        riskScore: asset.riskScore,
+        lastAssessment: new Date()
       },
       complianceScore: {
         overallScore: 0,
-        frameworkScores: new Map(),
-        lastAssessed: new Date(),
+        frameworkScores: {},
         gaps: [],
-        recommendations: []
+        lastAudit: new Date(),
+        nextAudit: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
       },
       lifecycleStage: {
-        stage: 'active',
+        currentStage: 'Production',
         stageProgress: 50,
         estimatedEndOfLife: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
         maintenanceSchedule: []
@@ -807,25 +789,38 @@ class ExternalDataIntegrationService {
         responseTime: 100,
         throughput: 1000,
         errorRate: 0.1,
-        lastMeasured: new Date()
+        uptime: 99.8,
+        lastMeasurement: new Date()
       },
       threatIntelligence: {
-        threatLevel: 'low',
+        threatLevel: 'Low',
         knownThreats: [],
-        indicators: [],
-        lastUpdated: new Date()
+        securityAdvisories: [],
+        lastUpdate: new Date()
       },
       costAnalysis: {
         totalCost: 0,
-        costBreakdown: new Map(),
-        costTrend: 'stable',
-        lastUpdated: new Date()
+        costBreakdown: {
+          infrastructure: 0,
+          licensing: 0,
+          maintenance: 0,
+          security: 0,
+          personnel: 0,
+          other: 0
+        },
+        costTrend: 'Stable',
+        optimizationOpportunities: []
       },
-      dependencyAnalysis: {
+      dependencies: {
         dependencies: [],
         dependents: [],
-        criticality: 'low',
-        lastAnalyzed: new Date()
+        criticalPath: false,
+        impactAnalysis: {
+          businessImpact: 'Low',
+          technicalImpact: 'Low',
+          financialImpact: 'Low',
+          recoveryTime: 24
+        }
       },
       recommendations: []
     };
@@ -842,7 +837,7 @@ class ExternalDataIntegrationService {
     return enriched;
   }
 
-  private evaluateCondition(asset: Asset, condition: any): boolean {
+  private evaluateCondition(asset: Asset, condition: EnrichmentRule['condition']): boolean {
     const fieldValue = this.getFieldValue(asset, condition.field);
     
     switch (condition.operator) {
@@ -851,11 +846,11 @@ class ExternalDataIntegrationService {
       case 'contains':
         return String(fieldValue).toLowerCase().includes(String(condition.value).toLowerCase());
       case 'starts_with':
-        return String(fieldValue).startsWith(condition.value);
+        return String(fieldValue).startsWith(String(condition.value));
       case 'ends_with':
-        return String(fieldValue).endsWith(condition.value);
+        return String(fieldValue).endsWith(String(condition.value));
       case 'regex':
-        return new RegExp(condition.value).test(String(fieldValue));
+        return new RegExp(String(condition.value)).test(String(fieldValue));
       case 'in':
         return Array.isArray(condition.value) && condition.value.includes(fieldValue);
       case 'not_in':
@@ -865,22 +860,24 @@ class ExternalDataIntegrationService {
     }
   }
 
-  private getFieldValue(asset: Asset, field: string): any {
+  private getFieldValue(asset: Asset, field: string): unknown {
     const fields = field.split('.');
-    let value: any = asset;
+    let value: unknown = asset;
     
     for (const f of fields) {
-      value = value?.[f];
+      if (value && typeof value === 'object' && f in value) {
+        value = (value as Record<string, unknown>)[f];
+      } else {
+        return undefined;
+      }
     }
     
     return value;
   }
 
-  private async applyTransformation(asset: Asset, enriched: EnrichmentData, rule: EnrichmentRule): Promise<void> {
+  private async applyTransformation(_asset: Asset, _enriched: EnrichmentData, rule: EnrichmentRule): Promise<void> {
     // Mock implementation - in real scenario, this would apply the actual transformation
-    if (import.meta.env.DEV) {
-      console.log(`Applying transformation rule: ${rule.name} to asset: ${asset.id}`);
-    }
+    logger.debug(`Applying transformation rule: ${rule.name}`);
   }
 
   async addEnrichmentRule(rule: Omit<EnrichmentRule, 'id' | 'createdAt' | 'updatedAt'>): Promise<EnrichmentRule> {
@@ -920,6 +917,15 @@ class ExternalDataIntegrationService {
     const source = this.dataSources.get(sourceId);
     if (!source) {
       return { success: false, message: 'Data source not found', latency: 0 };
+    }
+
+    // Check if service is available before testing
+    if (!isServiceAvailable()) {
+      return {
+        success: false,
+        message: 'Network unavailable. Cannot test connection.',
+        latency: 0
+      };
     }
 
     const startTime = Date.now();

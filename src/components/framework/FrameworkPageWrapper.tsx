@@ -3,6 +3,7 @@ import { FrameworkPage } from './FrameworkPage';
 import { frameworkService } from '../../services/frameworkService';
 import { FrameworkPhase } from '../../types/framework';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { logger } from '../../utils/logger';
 
 export const FrameworkPageWrapper: React.FC = () => {
   const [phases, setPhases] = useState<FrameworkPhase[]>([]);
@@ -18,7 +19,7 @@ export const FrameworkPageWrapper: React.FC = () => {
       const phasesData = await frameworkService.getPhases();
       setPhases(phasesData);
     } catch (error) {
-      console.error('Failed to load framework data:', error);
+      logger.error('Failed to load framework data', error instanceof Error ? error : undefined);
     } finally {
       setLoading(false);
     }

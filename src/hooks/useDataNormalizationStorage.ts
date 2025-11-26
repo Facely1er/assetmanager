@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { logger } from '../utils/logger';
 
 export interface DataTemplate {
   id: string;
@@ -128,7 +129,7 @@ export function useDataNormalizationStorage() {
       setStorageData(updatedData);
       setLastSaved(new Date().toLocaleTimeString());
     } catch (error) {
-      console.error('Error saving to localStorage:', error);
+      logger.error('Error saving to localStorage', error instanceof Error ? error : undefined);
       setSaveError('Failed to save data to localStorage');
     } finally {
       setIsSaving(false);
@@ -245,7 +246,7 @@ export function useDataNormalizationStorage() {
               // In production, consider using a proper expression parser library
               normalized[rule.targetField] = new Function('return ' + calculated)();
             } catch (calcError) {
-              console.warn('Calculation error:', calcError);
+              logger.warn('Calculation error', calcError instanceof Error ? calcError : undefined);
               normalized[rule.targetField] = null;
             }
             break;
@@ -342,7 +343,7 @@ export function useDataNormalizationStorage() {
 
       return true;
     } catch (error) {
-      console.error('Error exporting data:', error);
+      logger.error('Error exporting data', error instanceof Error ? error : undefined);
       setSaveError('Failed to export data');
       return false;
     }
@@ -371,7 +372,7 @@ export function useDataNormalizationStorage() {
 
           resolve(true);
         } catch (error) {
-          console.error('Error importing data:', error);
+          logger.error('Error importing data', error instanceof Error ? error : undefined);
           setSaveError('Failed to import data - invalid format');
           resolve(false);
         }

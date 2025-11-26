@@ -3,6 +3,7 @@ import { X, Upload, FileText, AlertCircle, CheckCircle, Download, FileSpreadshee
 import { Asset } from '../types/asset';
 import { validateAsset } from '../utils/validation';
 import { parseCSVContent, generateEnhancedCSVTemplate } from '../utils/csvUtils';
+import { logger } from '../utils/logger';
 
 interface AssetImportModalProps {
   isOpen: boolean;
@@ -188,7 +189,7 @@ export const AssetImportModal: React.FC<AssetImportModalProps> = ({
         resetModal();
       } catch (error) {
         // Error handling is done in the parent component
-        console.error('Error during import:', error);
+        logger.error('Error during import', error instanceof Error ? error : undefined);
       }
     }
   };

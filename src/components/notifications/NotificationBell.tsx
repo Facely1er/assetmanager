@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { notificationService } from '../../services/notificationService';
 import { NotificationCenter } from './NotificationCenter';
+import { logger } from '../../utils/logger';
 
 export const NotificationBell: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -25,7 +26,7 @@ export const NotificationBell: React.FC = () => {
       const count = await notificationService.getUnreadCount();
       setUnreadCount(count);
     } catch (error) {
-      console.error('Failed to load unread count:', error);
+      logger.error('Failed to load unread count', error instanceof Error ? error : undefined);
     }
   };
 

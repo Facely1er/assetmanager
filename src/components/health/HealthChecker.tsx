@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Activity, CheckCircle, AlertTriangle, XCircle, RefreshCw } from 'lucide-react';
 import { monitoring } from '../../utils/monitoring';
 import { isSupabaseEnabled } from '../../lib/supabase';
+import { logger } from '../../utils/logger';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -29,7 +30,7 @@ export const HealthChecker: React.FC = () => {
       const status = await monitoring.performHealthCheck();
       setHealthStatus(status);
     } catch (error) {
-      console.error('Health check failed:', error);
+      logger.error('Health check failed', error instanceof Error ? error : undefined);
     } finally {
       setLoading(false);
     }

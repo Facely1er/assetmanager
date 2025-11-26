@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui';
 import { Button } from './ui';
-import { useDataNormalizationStorage, DataTemplate } from '../hooks/useDataNormalizationStorage';
+import { useDataNormalizationStorage, DataTemplate, TransformationRule, StandardField } from '../hooks/useDataNormalizationStorage';
 import toast from 'react-hot-toast';
+import { logger } from '../utils/logger';
 import { 
   FileJson, 
   Loader, 
@@ -69,6 +70,8 @@ const DataNormalizationEngine: React.FC<DataNormalizationEngineProps> = ({ onVie
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Array<{ errorMessage?: string }>>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<DataTemplate | null>(null);
   const [showStorageInfo, setShowStorageInfo] = useState(false);
   const [activeTab, setActiveTab] = useState('templates');
   
@@ -113,7 +116,7 @@ const DataNormalizationEngine: React.FC<DataNormalizationEngineProps> = ({ onVie
         
         setIsLoading(false);
       } catch (err) {
-        console.error('Failed to initialize Data Normalization Engine:', err);
+        logger.error('Failed to initialize Data Normalization Engine', err instanceof Error ? err : undefined);
         setError('Failed to load templates');
         setIsLoading(false);
       }
@@ -150,10 +153,36 @@ const DataNormalizationEngine: React.FC<DataNormalizationEngineProps> = ({ onVie
   }, [activeTemplate, sourceData]);
 
   // Template operations
-  const handleCreateTemplate = (templateData: Omit<DataTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleCreateTemplate = (templateData: Omit<DataTemplate, 'id' | 'createdAt' | 'updatedAt'>, openEditor = false) => {
     addTemplate(templateData);
     setShowCreateModal(false);
-    toast.success('Template created successfully');
+    
+    if (openEditor) {
+      // Wait for template to be added, then find and edit it
+      setTimeout(() => {
+        // Find the most recently created template with matching name
+        const createdTemplate = [...templates]
+          .filter(t => t.name === templateData.name)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+        
+        if (createdTemplate) {
+          setEditingTemplate(createdTemplate);
+          setShowEditModal(true);
+        } else {
+          // Fallback: create a temporary template structure for editing
+          const tempTemplate: DataTemplate = {
+            ...templateData,
+            id: `temp_${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          setEditingTemplate(tempTemplate);
+          setShowEditModal(true);
+        }
+      }, 100);
+    }
+    
+    toast.success('Template created successfully' + (openEditor ? ' - Opening editor...' : ''));
   };
 
   const handleUpdateTemplate = (id: string, updates: Partial<DataTemplate>) => {
@@ -181,6 +210,128 @@ const DataNormalizationEngine: React.FC<DataNormalizationEngineProps> = ({ onVie
     };
     addTemplate(duplicated);
     toast.success('Template duplicated successfully');
+  };
+
+  // Open template editor
+  const handleEditTemplate = (template: DataTemplate) => {
+    setEditingTemplate({ ...template });
+    setShowEditModal(true);
+  };
+
+  // Save edited template
+  const handleSaveEditedTemplate = () => {
+    if (!editingTemplate) return;
+    
+    if (!editingTemplate.name.trim()) {
+      toast.error('Template name is required');
+      return;
+    }
+
+    // Check if this is a temporary template (created but not yet in the list)
+    if (editingTemplate.id.startsWith('temp_')) {
+      // Create new template with the edited data
+      const { id, createdAt, updatedAt, ...templateData } = editingTemplate;
+      addTemplate(templateData);
+      toast.success('Template created and saved successfully');
+    } else {
+      // Update existing template
+      const existingTemplate = templates.find(t => t.id === editingTemplate.id);
+      if (existingTemplate) {
+        handleUpdateTemplate(editingTemplate.id, editingTemplate);
+      } else {
+        // Template not found, create it
+        const { id, createdAt, updatedAt, ...templateData } = editingTemplate;
+        addTemplate(templateData);
+        toast.success('Template created successfully');
+      }
+    }
+    
+    setShowEditModal(false);
+    setEditingTemplate(null);
+  };
+
+  // Add transformation rule
+  const handleAddTransformationRule = () => {
+    if (!editingTemplate) return;
+    
+    const newRule: TransformationRule = {
+      id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sourceField: '',
+      targetField: '',
+      transformationType: 'direct',
+      parameters: {},
+      isRequired: false,
+      description: ''
+    };
+    
+    setEditingTemplate({
+      ...editingTemplate,
+      transformationRules: [...editingTemplate.transformationRules, newRule]
+    });
+  };
+
+  // Update transformation rule
+  const handleUpdateTransformationRule = (ruleId: string, updates: Partial<TransformationRule>) => {
+    if (!editingTemplate) return;
+    
+    setEditingTemplate({
+      ...editingTemplate,
+      transformationRules: editingTemplate.transformationRules.map(rule =>
+        rule.id === ruleId ? { ...rule, ...updates } : rule
+      )
+    });
+  };
+
+  // Delete transformation rule
+  const handleDeleteTransformationRule = (ruleId: string) => {
+    if (!editingTemplate) return;
+    
+    setEditingTemplate({
+      ...editingTemplate,
+      transformationRules: editingTemplate.transformationRules.filter(rule => rule.id !== ruleId)
+    });
+  };
+
+  // Add standard field
+  const handleAddStandardField = () => {
+    if (!editingTemplate) return;
+    
+    const newField: StandardField = {
+      id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: '',
+      dataType: 'string',
+      description: '',
+      isRequired: false,
+      validationRules: [],
+      examples: []
+    };
+    
+    setEditingTemplate({
+      ...editingTemplate,
+      standardFields: [...editingTemplate.standardFields, newField]
+    });
+  };
+
+  // Update standard field
+  const handleUpdateStandardField = (fieldId: string, updates: Partial<StandardField>) => {
+    if (!editingTemplate) return;
+    
+    setEditingTemplate({
+      ...editingTemplate,
+      standardFields: editingTemplate.standardFields.map(field =>
+        field.id === fieldId ? { ...field, ...updates } : field
+      )
+    });
+  };
+
+  // Delete standard field
+  const handleDeleteStandardField = (fieldId: string) => {
+    if (!editingTemplate) return;
+    
+    setEditingTemplate({
+      ...editingTemplate,
+      standardFields: editingTemplate.standardFields.filter(field => field.id !== fieldId)
+    });
   };
 
   // Enhanced: Preview data before processing
@@ -243,7 +394,7 @@ const DataNormalizationEngine: React.FC<DataNormalizationEngineProps> = ({ onVie
       }
 
     } catch (err) {
-      console.error('Error processing data:', err);
+      logger.error('Error processing data', err instanceof Error ? err : undefined);
       const errorMessage = err instanceof Error ? err.message : 'Failed to process data';
       setError(errorMessage);
       toast.error(errorMessage);
@@ -715,10 +866,23 @@ const DataNormalizationEngine: React.FC<DataNormalizationEngineProps> = ({ onVie
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleUpdateTemplate(template.id, { isActive: !template.isActive })}
-                        title="Toggle active status"
+                        onClick={() => handleEditTemplate(template)}
+                        title="Edit template"
                       >
                         <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdateTemplate(template.id, { isActive: !template.isActive })}
+                        title="Toggle active status"
+                        className={template.isActive ? 'bg-green-50 dark:bg-green-900/30' : ''}
+                      >
+                        {template.isActive ? (
+                          <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <X className="w-4 h-4" />
+                        )}
                       </Button>
                       <Button
                         variant="outline"
@@ -1083,7 +1247,7 @@ Example:
                           const typeInput = document.getElementById('template-data-type') as HTMLSelectElement;
                           
                           if (nameInput?.value) {
-                            handleCreateTemplate({
+                            const newTemplate = {
                               name: nameInput.value,
                               description: descInput?.value || '',
                               dataType: typeInput?.value || 'security_event',
@@ -1093,7 +1257,8 @@ Example:
                               standardFields: [],
                               isActive: true,
                               metadata: {}
-                            });
+                            };
+                            handleCreateTemplate(newTemplate, true); // Open editor after creation
                           }
                         }}
                       >
@@ -1102,6 +1267,385 @@ Example:
                     </div>
                   </div>
                 </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Edit Template Modal */}
+          {showEditModal && editingTemplate && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => { setShowEditModal(false); setEditingTemplate(null); }}>
+              <Card className="max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+                <CardHeader className="flex-shrink-0">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Edit className="w-5 h-5 mr-2" />
+                      Edit Template: {editingTemplate.name}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setShowEditModal(false); setEditingTemplate(null); }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-y-auto p-6">
+                  <div className="space-y-6">
+                    {/* Basic Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold flex items-center">
+                        <Settings className="w-5 h-5 mr-2" />
+                        Basic Information
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Template Name *</label>
+                          <input
+                            type="text"
+                            value={editingTemplate.name}
+                            onChange={(e) => setEditingTemplate({ ...editingTemplate, name: e.target.value })}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            placeholder="Enter template name"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Data Type</label>
+                          <select
+                            value={editingTemplate.dataType}
+                            onChange={(e) => setEditingTemplate({ ...editingTemplate, dataType: e.target.value })}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                          >
+                            {dataTypes.map(type => (
+                              <option key={type.id} value={type.id}>{type.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium mb-1">Description</label>
+                          <textarea
+                            value={editingTemplate.description}
+                            onChange={(e) => setEditingTemplate({ ...editingTemplate, description: e.target.value })}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            placeholder="Enter template description"
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Format</label>
+                          <select
+                            value={editingTemplate.format}
+                            onChange={(e) => setEditingTemplate({ ...editingTemplate, format: e.target.value })}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                          >
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV</option>
+                            <option value="xml">XML</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Source System</label>
+                          <input
+                            type="text"
+                            value={editingTemplate.sourceSystem}
+                            onChange={(e) => setEditingTemplate({ ...editingTemplate, sourceSystem: e.target.value })}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            placeholder="e.g., SIEM, Manual, API"
+                          />
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id="template-active"
+                            checked={editingTemplate.isActive}
+                            onChange={(e) => setEditingTemplate({ ...editingTemplate, isActive: e.target.checked })}
+                            className="w-4 h-4 mr-2"
+                          />
+                          <label htmlFor="template-active" className="text-sm font-medium">Active Template</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Transformation Rules */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold flex items-center">
+                          <Code className="w-5 h-5 mr-2" />
+                          Transformation Rules ({editingTemplate.transformationRules.length})
+                        </h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddTransformationRule}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Rule
+                        </Button>
+                      </div>
+                      {editingTemplate.transformationRules.length === 0 ? (
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center text-gray-600 dark:text-gray-400">
+                          No transformation rules defined. Click "Add Rule" to create one.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {editingTemplate.transformationRules.map((rule, index) => (
+                            <Card key={rule.id} className="border-l-4 border-l-blue-500">
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between mb-4">
+                                  <h4 className="font-semibold">Rule {index + 1}</h4>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteTransformationRule(rule.id)}
+                                    className="text-red-600 hover:text-red-700 dark:text-red-400"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Source Field *</label>
+                                    <input
+                                      type="text"
+                                      value={rule.sourceField}
+                                      onChange={(e) => handleUpdateTransformationRule(rule.id, { sourceField: e.target.value })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="e.g., event_id"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Target Field *</label>
+                                    <input
+                                      type="text"
+                                      value={rule.targetField}
+                                      onChange={(e) => handleUpdateTransformationRule(rule.id, { targetField: e.target.value })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="e.g., eventId"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Transformation Type *</label>
+                                    <select
+                                      value={rule.transformationType}
+                                      onChange={(e) => handleUpdateTransformationRule(rule.id, { 
+                                        transformationType: e.target.value as TransformationRule['transformationType'],
+                                        parameters: e.target.value === 'mapping' ? { mapping: {} } : 
+                                                   e.target.value === 'calculation' ? { formula: '' } :
+                                                   e.target.value === 'format' ? { format: '' } : {}
+                                      })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    >
+                                      <option value="direct">Direct Mapping</option>
+                                      <option value="mapping">Value Mapping</option>
+                                      <option value="calculation">Calculation</option>
+                                      <option value="validation">Validation</option>
+                                      <option value="format">Format</option>
+                                    </select>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={rule.isRequired}
+                                      onChange={(e) => handleUpdateTransformationRule(rule.id, { isRequired: e.target.checked })}
+                                      className="w-4 h-4 mr-2"
+                                    />
+                                    <label className="text-sm font-medium">Required Field</label>
+                                  </div>
+                                  {rule.transformationType === 'mapping' && (
+                                    <div className="md:col-span-2">
+                                      <label className="block text-sm font-medium mb-1">Value Mapping (JSON)</label>
+                                      <textarea
+                                        value={JSON.stringify(rule.parameters.mapping || {}, null, 2)}
+                                        onChange={(e) => {
+                                          try {
+                                            const mapping = JSON.parse(e.target.value);
+                                            handleUpdateTransformationRule(rule.id, { parameters: { mapping } });
+                                          } catch {
+                                            // Invalid JSON, ignore
+                                          }
+                                        }}
+                                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-sm"
+                                        rows={4}
+                                        placeholder='{"high": "critical", "medium": "warning", "low": "info"}'
+                                      />
+                                    </div>
+                                  )}
+                                  {rule.transformationType === 'calculation' && (
+                                    <div className="md:col-span-2">
+                                      <label className="block text-sm font-medium mb-1">Formula</label>
+                                      <input
+                                        type="text"
+                                        value={String(rule.parameters.formula || '')}
+                                        onChange={(e) => handleUpdateTransformationRule(rule.id, { parameters: { formula: e.target.value } })}
+                                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono"
+                                        placeholder='e.g., {field1} + {field2}'
+                                      />
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Use {"{fieldName}"} to reference source fields</p>
+                                    </div>
+                                  )}
+                                  {rule.transformationType === 'format' && (
+                                    <div className="md:col-span-2">
+                                      <label className="block text-sm font-medium mb-1">Format</label>
+                                      <select
+                                        value={String(rule.parameters.format || '')}
+                                        onChange={(e) => handleUpdateTransformationRule(rule.id, { parameters: { format: e.target.value } })}
+                                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      >
+                                        <option value="">Select format</option>
+                                        <option value="date">Date (ISO)</option>
+                                        <option value="uppercase">Uppercase</option>
+                                        <option value="lowercase">Lowercase</option>
+                                        <option value="number">Number</option>
+                                        <option value="boolean">Boolean</option>
+                                      </select>
+                                    </div>
+                                  )}
+                                  <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium mb-1">Description</label>
+                                    <input
+                                      type="text"
+                                      value={rule.description}
+                                      onChange={(e) => handleUpdateTransformationRule(rule.id, { description: e.target.value })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="Describe this transformation rule"
+                                    />
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Standard Fields */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold flex items-center">
+                          <Database className="w-5 h-5 mr-2" />
+                          Standard Fields ({editingTemplate.standardFields.length})
+                        </h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddStandardField}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Field
+                        </Button>
+                      </div>
+                      {editingTemplate.standardFields.length === 0 ? (
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center text-gray-600 dark:text-gray-400">
+                          No standard fields defined. Click "Add Field" to create one.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {editingTemplate.standardFields.map((field, index) => (
+                            <Card key={field.id} className="border-l-4 border-l-green-500">
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between mb-4">
+                                  <h4 className="font-semibold">Field {index + 1}</h4>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteStandardField(field.id)}
+                                    className="text-red-600 hover:text-red-700 dark:text-red-400"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Field Name *</label>
+                                    <input
+                                      type="text"
+                                      value={field.name}
+                                      onChange={(e) => handleUpdateStandardField(field.id, { name: e.target.value })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="e.g., eventId"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Data Type *</label>
+                                    <select
+                                      value={field.dataType}
+                                      onChange={(e) => handleUpdateStandardField(field.id, { dataType: e.target.value })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    >
+                                      <option value="string">String</option>
+                                      <option value="number">Number</option>
+                                      <option value="boolean">Boolean</option>
+                                      <option value="date">Date</option>
+                                      <option value="object">Object</option>
+                                      <option value="array">Array</option>
+                                    </select>
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium mb-1">Description</label>
+                                    <textarea
+                                      value={field.description}
+                                      onChange={(e) => handleUpdateStandardField(field.id, { description: e.target.value })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="Describe this standard field"
+                                      rows={2}
+                                    />
+                                  </div>
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={field.isRequired}
+                                      onChange={(e) => handleUpdateStandardField(field.id, { isRequired: e.target.checked })}
+                                      className="w-4 h-4 mr-2"
+                                    />
+                                    <label className="text-sm font-medium">Required Field</label>
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium mb-1">Validation Rules (comma-separated)</label>
+                                    <input
+                                      type="text"
+                                      value={field.validationRules.join(', ')}
+                                      onChange={(e) => handleUpdateStandardField(field.id, { 
+                                        validationRules: e.target.value.split(',').map(r => r.trim()).filter(r => r) 
+                                      })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="e.g., not_empty, min_length:5, max_length:100"
+                                    />
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium mb-1">Examples (comma-separated)</label>
+                                    <input
+                                      type="text"
+                                      value={field.examples.join(', ')}
+                                      onChange={(e) => handleUpdateStandardField(field.id, { 
+                                        examples: e.target.value.split(',').map(e => e.trim()).filter(e => e) 
+                                      })}
+                                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                      placeholder="e.g., evt_12345, log_67890"
+                                    />
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+                <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => { setShowEditModal(false); setEditingTemplate(null); }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveEditedTemplate}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </Button>
+                </div>
               </Card>
             </div>
           )}

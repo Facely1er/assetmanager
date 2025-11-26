@@ -2,6 +2,7 @@ import { supabase, handleSupabaseError, isSupabaseEnabled } from '../lib/supabas
 import { Report } from '../types/organization';
 import { Asset } from '../types/asset';
 import { logError } from '../utils/errorHandling';
+import { logger } from '../utils/logger';
 
 // Dynamic imports for heavy libraries - only loaded when needed
 // This significantly reduces initial bundle size
@@ -11,9 +12,7 @@ export const reportingService = {
   async getReports(): Promise<Report[]> {
     // Demo mode - return empty array if Supabase is not configured
     if (!isSupabaseEnabled || !supabase) {
-      if (import.meta.env.DEV) {
-        console.log('Running in demo mode - returning empty reports array');
-      }
+      logger.debug('Running in demo mode - returning empty reports array');
       return Promise.resolve([]);
     }
 
@@ -23,9 +22,7 @@ export const reportingService = {
       const isConnected = await checkSupabaseConnectivity();
 
       if (!isConnected) {
-        if (import.meta.env.DEV) {
-          console.log('Supabase not connected, returning empty reports');
-        }
+        logger.debug('Supabase not connected, returning empty reports');
         return [];
       }
       
@@ -44,9 +41,7 @@ export const reportingService = {
         error.message.includes('network') ||
         error.message.includes('NetworkError')
       )) {
-        if (import.meta.env.DEV) {
-          console.warn('Network error fetching reports, returning empty array:', error.message);
-        }
+        logger.warn('Network error fetching reports, returning empty array:', error.message);
         return [];
       }
 

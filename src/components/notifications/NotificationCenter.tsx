@@ -4,6 +4,7 @@ import { Notification } from '../../types/organization';
 import { notificationService } from '../../services/notificationService';
 import { format, isToday, isYesterday } from 'date-fns';
 import toast from 'react-hot-toast';
+import { logger } from '../../utils/logger';
 
 interface NotificationCenterProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       const count = await notificationService.getUnreadCount();
       setUnreadCount(count);
     } catch (error) {
-      console.error('Failed to load unread count:', error);
+      logger.error('Failed to load unread count', error instanceof Error ? error : undefined);
     }
   };
 

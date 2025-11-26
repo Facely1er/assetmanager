@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Network, ArrowRight, AlertCircle } from 'lucide-react';
 import { Asset, AssetRelationship } from '../types/asset';
+import { logger } from '../utils/logger';
 
 interface AssetRelationshipModalProps {
   isOpen: boolean;
@@ -70,7 +71,7 @@ export const AssetRelationshipModal: React.FC<AssetRelationshipModalProps> = ({
       await onSave(validRelationships);
       onClose();
     } catch (error) {
-      console.error('Error saving relationships:', error);
+      logger.error('Error saving relationships', error instanceof Error ? error : undefined);
     } finally {
       setIsSubmitting(false);
     }

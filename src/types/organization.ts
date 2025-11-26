@@ -3,7 +3,7 @@ export interface Organization {
   name: string;
   slug: string;
   description?: string;
-  logo_url?: string;
+  logo_url?: string | null;
   settings: Record<string, unknown>;
   plan: 'free' | 'pro' | 'enterprise';
   created_at: Date;

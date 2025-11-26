@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, AlertCircle } from 'lucide-react';
 import { Asset } from '../types/asset';
 import { complianceFrameworks, assetTypes, criticalityLevels, statusOptions } from '../data/sampleAssets';
+import { logger } from '../utils/logger';
 
 interface AssetFormModalProps {
   asset?: Asset | null;
@@ -177,7 +178,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
       await onSave(formData);
       onClose();
     } catch (error) {
-      console.error('Error saving asset:', error);
+      logger.error('Error saving asset', error instanceof Error ? error : undefined);
       setErrors([{ field: 'general', message: 'Failed to save asset. Please try again.' }]);
     } finally {
       setIsSubmitting(false);

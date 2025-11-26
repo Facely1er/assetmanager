@@ -1,5 +1,5 @@
 import { Asset } from '../types/asset';
-import { DemoScenario } from './demoScenarios';
+import { DemoScenario, getDemoScenario } from './demoScenarios';
 import { generateAssetInventory } from './assetGenerators';
 
 export interface DemoDataPackage {
@@ -68,13 +68,6 @@ export function generateAllDemoPackages(): Record<string, DemoDataPackage> {
   return packages;
 }
 
-// Import the demo scenarios
-import { getDemoScenario } from './demoScenarios';
-
-export function getDemoScenario(scenarioId: string) {
-  // This will be imported from demoScenarios.ts
-  return null; // Placeholder - actual implementation in demoScenarios.ts
-}
 
 // Enhanced demo data with realistic relationships and dependencies
 export function createRealisticDemoAssets(scenarioId: string): Asset[] {

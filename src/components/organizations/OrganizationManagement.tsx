@@ -4,26 +4,20 @@ import {
   Users, 
   Settings, 
   Plus, 
-  Edit, 
-  Trash2,
-  Crown,
-  Shield,
-  Calendar,
-  Activity,
-  BarChart3,
-  UserPlus
+  Shield
 } from 'lucide-react';
-import { Organization, OrganizationMember } from '../../types/organization';
+import { Organization } from '../../types/organization';
 import { organizationService } from '../../services/organizationService';
-import { useAuth } from '../../hooks/useAuth';
 import { TeamManagementModal } from '../team/TeamManagementModal';
+import { OrganizationSettingsModal } from './OrganizationSettingsModal';
 import toast from 'react-hot-toast';
+import { logger } from '../../utils/logger';
 
 export const OrganizationManagement: React.FC = () => {
-  const { user } = useAuth();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [showTeamModal, setShowTeamModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newOrgData, setNewOrgData] = useState({
@@ -42,7 +36,7 @@ export const OrganizationManagement: React.FC = () => {
       const orgs = await organizationService.getUserOrganizations();
       setOrganizations(orgs);
     } catch (error) {
-      console.error('Error loading organizations:', error);
+      logger.error('Error loading organizations', error instanceof Error ? error : undefined);
       // Demo mode - show sample organization
       setOrganizations([
         {
@@ -76,7 +70,7 @@ export const OrganizationManagement: React.FC = () => {
       setShowCreateModal(false);
       setNewOrgData({ name: '', slug: '', description: '' });
       toast.success('Organization created successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to create organization');
     }
   };
@@ -205,10 +199,11 @@ export const OrganizationManagement: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    // TODO: Implement organization settings
-                    toast.info('Organization settings coming soon');
+                    setSelectedOrg(org);
+                    setShowSettingsModal(true);
                   }}
                   className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  aria-label="Organization settings"
                 >
                   <Settings className="h-4 w-4" />
                 </button>
@@ -299,6 +294,22 @@ export const OrganizationManagement: React.FC = () => {
             setSelectedOrg(null);
           }}
           organization={selectedOrg}
+        />
+      )}
+
+      {/* Organization Settings Modal */}
+      {selectedOrg && showSettingsModal && (
+        <OrganizationSettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => {
+            setShowSettingsModal(false);
+            setSelectedOrg(null);
+          }}
+          organization={selectedOrg}
+          onUpdate={(updatedOrg) => {
+            setOrganizations(orgs => orgs.map(org => org.id === updatedOrg.id ? updatedOrg : org));
+            setSelectedOrg(updatedOrg);
+          }}
         />
       )}
     </div>

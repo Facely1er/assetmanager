@@ -4,6 +4,7 @@ import { businessImpactService } from '../../services/businessImpactService';
 import { BusinessFunction, BusinessImpact } from '../../types/business-impact';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { logger } from '../../utils/logger';
 
 export const BusinessImpactPageWrapper: React.FC = () => {
   const { assets } = useAssetInventory();
@@ -25,7 +26,7 @@ export const BusinessImpactPageWrapper: React.FC = () => {
       setBusinessFunctions(functions);
       setBusinessImpacts(impacts);
     } catch (error) {
-      console.error('Failed to load business impact data:', error);
+      logger.error('Failed to load business impact data', error instanceof Error ? error : undefined);
     } finally {
       setLoading(false);
     }

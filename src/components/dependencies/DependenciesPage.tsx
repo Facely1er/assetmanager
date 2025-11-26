@@ -7,6 +7,7 @@ import { Asset, AssetRelationship } from '../../types/asset';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { assetService } from '../../services/assetService';
 import toast from 'react-hot-toast';
+import { logger } from '../../utils/logger';
 
 export const DependenciesPage: React.FC = () => {
   const { assets, refreshAssets } = useAssetInventory();
@@ -54,7 +55,7 @@ export const DependenciesPage: React.FC = () => {
         toast.success('Dependency deleted successfully');
       }
     } catch (error) {
-      console.error('Error deleting dependency:', error);
+      logger.error('Error deleting dependency', error instanceof Error ? error : undefined);
       toast.error('Failed to delete dependency');
     }
   };
@@ -111,7 +112,7 @@ export const DependenciesPage: React.FC = () => {
       setIsFormOpen(false);
       toast.success(`Dependency ${existingIndex >= 0 ? 'updated' : 'created'} successfully`);
     } catch (error) {
-      console.error('Error saving dependency:', error);
+      logger.error('Error saving dependency', error instanceof Error ? error : undefined);
       toast.error('Failed to save dependency');
     }
   };

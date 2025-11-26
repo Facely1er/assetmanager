@@ -2,7 +2,7 @@
 
 [build]
   publish = "dist"
-  command = "npm ci --production=false && npm run build"
+  command = "npm ci && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -147,9 +147,6 @@
 # Performance and build optimizations
 [[plugins]]
   package = "netlify-plugin-inline-critical-css"
-  
-  [plugins.inputs]
-    src = "dist"
 
 # Custom error pages
 [[redirects]]

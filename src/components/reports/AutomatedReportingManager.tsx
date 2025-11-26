@@ -9,6 +9,7 @@ import { Asset } from '../../types/asset';
 import { useAssetInventory } from '../../contexts/AssetInventoryContext';
 import { dataEnrichmentService } from '../../services/dataEnrichmentService';
 import { analyticsService } from '../../services/analyticsService';
+import { logger } from '../../utils/logger';
 
 interface AutomatedReportingManagerProps {
   onClose: () => void;
@@ -40,7 +41,7 @@ export const AutomatedReportingManager: React.FC<AutomatedReportingManagerProps>
       setTemplates(templatesData);
       setReports(reportsData);
     } catch (error) {
-      console.error('Error loading automated reporting data:', error);
+      logger.error('Error loading automated reporting data', error instanceof Error ? error : undefined);
     }
   };
 
@@ -50,7 +51,7 @@ export const AutomatedReportingManager: React.FC<AutomatedReportingManagerProps>
       setSchedules(prev => [...prev, newSchedule]);
       setShowCreateSchedule(false);
     } catch (error) {
-      console.error('Error creating schedule:', error);
+      logger.error('Error creating schedule', error instanceof Error ? error : undefined);
     }
   };
 
@@ -62,7 +63,7 @@ export const AutomatedReportingManager: React.FC<AutomatedReportingManagerProps>
         setEditingSchedule(null);
       }
     } catch (error) {
-      console.error('Error updating schedule:', error);
+      logger.error('Error updating schedule', error instanceof Error ? error : undefined);
     }
   };
 
@@ -73,7 +74,7 @@ export const AutomatedReportingManager: React.FC<AutomatedReportingManagerProps>
         setSchedules(prev => prev.filter(s => s.id !== id));
       }
     } catch (error) {
-      console.error('Error deleting schedule:', error);
+      logger.error('Error deleting schedule', error instanceof Error ? error : undefined);
     }
   };
 
@@ -99,7 +100,7 @@ export const AutomatedReportingManager: React.FC<AutomatedReportingManagerProps>
 
       setReports(prev => [report, ...prev]);
     } catch (error) {
-      console.error('Error generating report:', error);
+      logger.error('Error generating report', error instanceof Error ? error : undefined);
     }
   };
 
