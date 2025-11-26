@@ -37,10 +37,10 @@
 
 ### Step 2: Run Migration Script
 
-**Option A: Using PowerShell Script** (Recommended)
-```powershell
-cd C:\Users\facel\Downloads\GitHub\CyberSoluce-AssetManager
-.\scripts\migrate-to-new-repo.ps1
+**Option A: Using Bash Script** (Recommended - Works in Git Bash)
+```bash
+cd /c/Users/facel/Downloads/GitHub/CyberSoluce-AssetManager
+./migrate-repo.sh
 ```
 
 The script will:
@@ -57,8 +57,17 @@ The script will:
 5. Change URL to: `https://github.com/Facely1er/cybersoluce-assetmanager.git`
 6. Publish branch
 
-**Option C: Manual Git Commands**
+**Option C: Manual Git Commands** (Git Bash or PowerShell)
+```bash
+# In Git Bash:
+cd /c/Users/facel/Downloads/GitHub/CyberSoluce-AssetManager
+git remote remove origin
+git remote add origin https://github.com/Facely1er/cybersoluce-assetmanager.git
+git push -u origin main
+```
+
 ```powershell
+# In PowerShell (if git is in PATH):
 cd C:\Users\facel\Downloads\GitHub\CyberSoluce-AssetManager
 git remote remove origin
 git remote add origin https://github.com/Facely1er/cybersoluce-assetmanager.git

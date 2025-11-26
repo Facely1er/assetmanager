@@ -31,10 +31,14 @@ if (-not (Test-Path ".git")) {
 Write-Host "📋 Checking current git configuration..." -ForegroundColor Yellow
 Write-Host ""
 
-$currentRemote = git remote get-url origin 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Current remote: $currentRemote" -ForegroundColor Gray
-} else {
+try {
+    $currentRemote = git remote get-url origin 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Current remote: $currentRemote" -ForegroundColor Gray
+    } else {
+        Write-Host "No remote configured" -ForegroundColor Yellow
+    }
+} catch {
     Write-Host "No remote configured" -ForegroundColor Yellow
 }
 
@@ -45,18 +49,10 @@ Write-Host ""
 
 # Check for uncommitted changes
 Write-Host "🔍 Checking for uncommitted changes..." -ForegroundColor Yellow
-$statusOutput = git status --porcelain 2>&1
-$hasChanges = $false
-if ($statusOutput) {
-    $statusString = $statusOutput | Out-String
-    if ($statusString.Trim().Length -gt 0) {
-        $hasChanges = $true
-    }
-}
-
-if ($hasChanges) {
+$status = git status --porcelain 2>&1
+if ($status) {
     Write-Host "⚠️  Uncommitted changes detected:" -ForegroundColor Yellow
-    Write-Host $statusOutput -ForegroundColor Gray
+    Write-Host $status -ForegroundColor Gray
     Write-Host ""
     Write-Host "Please commit or stash changes before migrating:" -ForegroundColor Yellow
     Write-Host "  git add ." -ForegroundColor Cyan
@@ -77,7 +73,7 @@ if ($hasChanges) {
 Write-Host ""
 
 # Dry run check
-if ($DryRun) {
+if ($DryRun.IsPresent) {
     Write-Host "🔍 DRY RUN MODE - No changes will be made" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Would execute:" -ForegroundColor Cyan
