@@ -44,7 +44,7 @@ $migrations = @(
     @{
         File = "20250125000000_dependency_manager_features.sql"
         Name = "Migration 3: All Features"
-        Description = "Creates all feature tables (assets, risks, mitigations, dependencies, etc.)"
+        Description = "Creates all feature tables including assets, risks, mitigations, dependencies, etc."
     }
 )
 
@@ -93,7 +93,7 @@ Write-Host "✅ Migration files prepared successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "📋 Next Steps:" -ForegroundColor Cyan
 Write-Host "   1. Open the prepared files in: $outputPath" -ForegroundColor White
-Write-Host "   2. Copy each file's content (one at a time)" -ForegroundColor White
+Write-Host "   2. Copy each file content one at a time" -ForegroundColor White
 Write-Host "   3. Go to Supabase SQL Editor:" -ForegroundColor White
 Write-Host "      https://app.supabase.com/project/uvdrwbmhmtgacwzujfzc/sql/new" -ForegroundColor Cyan
 Write-Host "   4. Paste and run each migration in order (1, 2, 3)" -ForegroundColor White
@@ -121,7 +121,7 @@ foreach ($migration in $migrations) {
 }
 
 Set-Content -Path $combinedFile -Value $combinedContent
-Write-Host "📄 Combined reference file created: $combinedFile" -ForegroundColor Cyan
-Write-Host "   (Use this for reference only - run migrations separately)" -ForegroundColor Gray
+Write-Host "Combined reference file created: $combinedFile" -ForegroundColor Cyan
+Write-Host "   Use this for reference only - run migrations separately" -ForegroundColor Gray
 Write-Host ""
 
